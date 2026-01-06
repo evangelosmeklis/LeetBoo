@@ -9,9 +9,16 @@ import SwiftUI
 
 @main
 struct LeetBooApp: App {
+    @StateObject private var dataManager = DataManager()
+
+    init() {
+        NotificationManager.shared.requestAuthorization { _ in }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(dataManager)
         }
     }
 }

@@ -8,17 +8,27 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var dataManager: DataManager
+    @State private var selectedTab = 0
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView(selection: $selectedTab) {
+            DashboardView()
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                .tag(0)
+
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
+                }
+                .tag(1)
         }
-        .padding()
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(DataManager())
 }
