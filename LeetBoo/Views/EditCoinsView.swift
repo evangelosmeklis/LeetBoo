@@ -17,21 +17,48 @@ struct EditCoinsView: View {
 
     var body: some View {
         NavigationView {
-            Form {
-                Section {
-                    TextField("Coins", text: $inputValue)
-                        .keyboardType(.numberPad)
-                        .font(.title)
-                }
-
-                Section {
-                    HStack {
-                        Text("Current Value:")
-                        Spacer()
-                        Text("\(coins)")
-                            .foregroundColor(.secondary)
+            ZStack {
+                Color.backgroundGradient.ignoresSafeArea()
+                
+                VStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("ENTER NEW VALUE")
+                            .font(.system(.caption, design: .rounded))
+                            .fontWeight(.bold)
+                            .tracking(1.5)
+                            .foregroundColor(.leetCodeTextSecondary)
+                        
+                         TextField("Coins", text: $inputValue)
+                            .keyboardType(.numberPad)
+                            .font(.system(size: 32, design: .rounded))
+                            .padding()
+                            .background(Color.black.opacity(0.3))
+                            .cornerRadius(12)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.1)))
+                            .foregroundColor(.white)
                     }
+                    .padding(24)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(24)
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("Current Value")
+                                .foregroundColor(.leetCodeTextSecondary)
+                            Spacer()
+                            Text("\(coins)")
+                                .font(.title3)
+                                .foregroundColor(.leetCodeTextPrimary)
+                                .fontWeight(.bold)
+                        }
+                    }
+                    .padding(24)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(24)
+                    
+                    Spacer()
                 }
+                .padding()
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -40,6 +67,7 @@ struct EditCoinsView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(.white)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -49,9 +77,11 @@ struct EditCoinsView: View {
                             dismiss()
                         }
                     }
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
+                    .foregroundColor(inputValue.isEmpty ? .gray : .leetCodeOrange)
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
 }
