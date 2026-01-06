@@ -25,6 +25,8 @@ struct ContentView: View {
                 }
                 .tag(1)
         }
+        .accentColor(.leetCodeOrange)
+        .preferredColorScheme(.dark)
     }
 }
 

@@ -15,82 +15,177 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Enable Notifications For")) {
-                    ForEach(dataManager.userData.activities) { activity in
-                        ActivityToggleRow(activity: activity)
-                    }
-                }
-
-                Section(header: Text("Notification Settings")) {
-                    Toggle("Enable Notifications", isOn: $enableNotifications)
-                        .onChange(of: enableNotifications) {
-                            updateSettings()
+            ZStack {
+                Color.backgroundGradient.ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Activities Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("NOTIFICATIONS")
+                                .font(.system(.caption, design: .rounded))
+                                .fontWeight(.bold)
+                                .tracking(1.5)
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .padding(.horizontal, 4)
+                            
+                            VStack(spacing: 1) {
+                                ForEach(dataManager.userData.activities) { activity in
+                                    ActivityToggleRow(activity: activity)
+                                    if activity.id != dataManager.userData.activities.last?.id {
+                                        Divider().background(Color.white.opacity(0.1))
+                                    }
+                                }
+                            }
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
                         }
+                        
+                        // Notification Settings Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("PREFERENCES")
+                                .font(.system(.caption, design: .rounded))
+                                .fontWeight(.bold)
+                                .tracking(1.5)
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .padding(.horizontal, 4)
+                            
+                            VStack(spacing: 20) {
+                                Toggle("Enable Notifications", isOn: Binding(
+                                    get: { enableNotifications },
+                                    set: { val in
+                                        enableNotifications = val
+                                        updateSettings()
+                                    }
+                                ))
+                                .foregroundColor(.leetCodeTextPrimary)
+                                .tint(.leetCodeOrange)
+                                
+                                if enableNotifications {
+                                    Divider().background(Color.white.opacity(0.1))
+                                    
+                                    DatePicker(
+                                        "Reminder Time",
+                                        selection: Binding(
+                                            get: { reminderTime },
+                                            set: { val in
+                                                reminderTime = val
+                                                updateSettings()
+                                            }
+                                        ),
+                                        displayedComponents: .hourAndMinute
+                                    )
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                    .colorScheme(.dark)
+                                    
+                                    Divider().background(Color.white.opacity(0.1))
+                                    
+                                    HStack {
+                                        Text("Frequency")
+                                            .foregroundColor(.leetCodeTextPrimary)
+                                        Spacer()
+                                        Picker("Frequency", selection: Binding(
+                                            get: { reminderFrequency },
+                                            set: { val in
+                                                reminderFrequency = val
+                                                updateSettings()
+                                            }
+                                        )) {
+                                            ForEach(ReminderFrequency.allCases, id: \.self) { frequency in
+                                                Text(frequency.rawValue).tag(frequency)
+                                            }
+                                        }
+                                        .pickerStyle(.menu)
+                                        .tint(.leetCodeOrange)
+                                    }
 
-                    if enableNotifications {
-                        DatePicker(
-                            "Reminder Time",
-                            selection: $reminderTime,
-                            displayedComponents: .hourAndMinute
-                        )
-                        .onChange(of: reminderTime) {
-                            updateSettings()
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Daily reminders: \(reminderFrequency.count) per day")
+                                            .font(.caption)
+                                            .foregroundColor(.leetCodeTextSecondary)
+                                        
+                                        Text("Weekly Luck: Every Monday at reminder time")
+                                            .font(.caption)
+                                            .foregroundColor(.leetCodeTextSecondary)
+                                    }
+                                }
+                            }
+                            .padding(24)
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
                         }
-
-                        Picker("Reminder Frequency", selection: $reminderFrequency) {
-                            ForEach(ReminderFrequency.allCases, id: \.self) { frequency in
-                                Text(frequency.rawValue).tag(frequency)
+                        
+                        // Data Management Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("DATA")
+                                .font(.system(.caption, design: .rounded))
+                                .fontWeight(.bold)
+                                .tracking(1.5)
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .padding(.horizontal, 4)
+                            
+                            Button(action: resetAllData) {
+                                HStack {
+                                    Text("Reset All Data")
+                                        .foregroundColor(.leetCodeRed)
+                                        .fontWeight(.medium)
+                                    Spacer()
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.leetCodeRed)
+                                }
+                                .padding(24)
+                                .background(.ultraThinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 24))
                             }
                         }
-                        .onChange(of: reminderFrequency) {
-                            updateSettings()
+                        
+                        // About Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("ABOUT")
+                                .font(.system(.caption, design: .rounded))
+                                .fontWeight(.bold)
+                                .tracking(1.5)
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .padding(.horizontal, 4)
+                            
+                            VStack(spacing: 16) {
+                                HStack {
+                                    Text("Version")
+                                        .foregroundColor(.leetCodeTextPrimary)
+                                    Spacer()
+                                    Text("1.0.0")
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                }
+                                
+                                Divider().background(Color.white.opacity(0.1))
+                                
+                                HStack {
+                                    Text("Max Coins/Month")
+                                        .foregroundColor(.leetCodeTextPrimary)
+                                    Spacer()
+                                    Text("370")
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                }
+                                
+                                Text("Daily: 330 coins/month • Weekly Luck: 40 coins/month")
+                                    .font(.caption)
+                                    .foregroundColor(.leetCodeTextSecondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .padding(24)
+                            .background(.ultraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
                         }
-
-                        Text("Daily reminders: \(reminderFrequency.count) per day")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        Text("Weekly Luck: Every Monday at reminder time")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
                     }
-                }
-
-                Section(header: Text("Data Management")) {
-                    Button(action: resetAllData) {
-                        HStack {
-                            Text("Reset All Data")
-                                .foregroundColor(.red)
-                            Spacer()
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
-                    }
-                }
-
-                Section(header: Text("About")) {
-                    HStack {
-                        Text("Version")
-                        Spacer()
-                        Text("1.0.0")
-                            .foregroundColor(.secondary)
-                    }
-
-                    HStack {
-                        Text("Max Coins/Month")
-                        Spacer()
-                        Text("370")
-                            .foregroundColor(.secondary)
-                    }
-
-                    Text("Daily: 330 coins/month • Weekly Luck: 40 coins/month")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    .padding()
+                    .padding(.bottom, 40)
                 }
             }
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.large)
         }
+        .preferredColorScheme(.dark)
         .onAppear {
             let settings = dataManager.userData.notificationSettings
             enableNotifications = settings.enableNotifications
@@ -120,6 +215,10 @@ struct SettingsView: View {
             for: dataManager.userData.activities,
             settings: dataManager.userData.notificationSettings
         )
+        // Refresh local state if needed
+        let settings = dataManager.userData.notificationSettings
+        enableNotifications = settings.enableNotifications
+        reminderTime = settings.dailyReminderTime
     }
 }
 
@@ -131,14 +230,16 @@ struct ActivityToggleRow: View {
         Toggle(isOn: binding) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(activity.type.rawValue)
-                    .font(.headline)
+                    .font(.body)
+                    .foregroundColor(.leetCodeTextPrimary)
 
                 Text(activity.type.description)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.leetCodeTextSecondary)
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 8)
         }
+        .tint(.leetCodeOrange)
     }
 
     private var binding: Binding<Bool> {
