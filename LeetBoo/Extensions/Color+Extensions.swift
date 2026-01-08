@@ -1,25 +1,38 @@
 import SwiftUI
 
 extension Color {
+    // Light mode colors
     static let leetCodeDark = Color(hex: "1A1A1A")
     static let leetCodeDarkLighter = Color(hex: "282828")
-    static let leetCodeOrange = Color(hex: "FFA116")
-    static let leetCodeGreen = Color(hex: "2DB55D")
-    static let leetCodeYellow = Color(hex: "FFB800")
-    static let leetCodeRed = Color(hex: "F63636")
-    static let leetCodeTextPrimary = Color(hex: "FFFFFF")
-    static let leetCodeTextSecondary = Color(hex: "B3B3B3")
-    
-    
+    static let leetCodeOrange = Color(hex: "F89F1B")
+    static let leetCodeGreen = Color(hex: "00B894")
+    static let leetCodeYellow = Color(hex: "FDCB6E")
+    static let leetCodeRed = Color(hex: "E17055")
+
+    // Light mode text colors
+    static let leetCodeTextPrimary = Color(hex: "2D3436")
+    static let leetCodeTextSecondary = Color(hex: "636E72")
+
+    // Light mode background colors
+    static let cardBackground = Color(hex: "FFFFFF")
+    static let pageBackground = Color(hex: "F8F9FA")
+    static let subtleGray = Color(hex: "DFE6E9")
+
     // Gradients
     static let leetCodeGradient = LinearGradient(
-        gradient: Gradient(colors: [Color(hex: "FFA116"), Color(hex: "FFCB59")]),
+        gradient: Gradient(colors: [Color(hex: "F89F1B"), Color(hex: "FDCB6E")]),
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    
+
     static let backgroundGradient = LinearGradient(
-        gradient: Gradient(colors: [Color(hex: "1A1A1A"), Color(hex: "0D0D0D")]),
+        gradient: Gradient(colors: [Color(hex: "F8F9FA"), Color(hex: "FFFFFF")]),
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
+    static let cardGradient = LinearGradient(
+        gradient: Gradient(colors: [Color.white, Color(hex: "F8F9FA")]),
         startPoint: .top,
         endPoint: .bottom
     )
