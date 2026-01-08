@@ -21,12 +21,12 @@ struct ContentView: View {
 
             SettingsView()
                 .tabItem {
-                    Label("Settings", systemImage: "gear")
+                    Label("Settings", systemImage: "gearshape.fill")
                 }
                 .tag(1)
         }
-        .accentColor(.leetCodeOrange)
-        .preferredColorScheme(.dark)
+        .tint(.leetCodeOrange)
+        .preferredColorScheme(.light)
     }
 }
 

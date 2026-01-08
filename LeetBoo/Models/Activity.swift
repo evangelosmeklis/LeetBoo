@@ -40,8 +40,27 @@ struct Activity: Identifiable, Codable {
 
     mutating func checkAndResetDaily() {
         guard let lastDate = lastCompletedDate else { return }
-        if !Calendar.current.isDateInToday(lastDate) {
-            completedToday = false
+
+        // For daily activities, reset if not today
+        if type == .daily {
+            if !Calendar.current.isDateInToday(lastDate) {
+                completedToday = false
+            }
+        }
+        // For weekly luck, reset if not this week or if it's a new Monday
+        else if type == .weeklyLuck {
+            let calendar = Calendar.current
+            let currentWeekday = calendar.component(.weekday, from: Date())
+            let lastWeekday = calendar.component(.weekday, from: lastDate)
+
+            // Reset if it's Monday and we last completed on a previous Monday (or earlier in week)
+            if currentWeekday == 2 && !calendar.isDateInToday(lastDate) {
+                completedToday = false
+            }
+            // Or if we're in a different week
+            else if !calendar.isDate(Date(), equalTo: lastDate, toGranularity: .weekOfYear) {
+                completedToday = false
+            }
         }
     }
 }

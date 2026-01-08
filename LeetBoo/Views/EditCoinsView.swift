@@ -18,47 +18,45 @@ struct EditCoinsView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.backgroundGradient.ignoresSafeArea()
-                
-                VStack(spacing: 24) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("ENTER NEW VALUE")
-                            .font(.system(.caption, design: .rounded))
-                            .fontWeight(.bold)
-                            .tracking(1.5)
+                Color.pageBackground.ignoresSafeArea()
+
+                VStack(spacing: 20) {
+                    // Input field
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Enter New Value")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
                             .foregroundColor(.leetCodeTextSecondary)
-                        
-                         TextField("Coins", text: $inputValue)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+
+                        TextField("Coins", text: $inputValue)
                             .keyboardType(.numberPad)
-                            .font(.system(size: 32, design: .rounded))
-                            .padding()
-                            .background(Color.black.opacity(0.3))
-                            .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.1)))
-                            .foregroundColor(.white)
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .padding(20)
+                            .background(Color.cardBackground)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                            .foregroundColor(.leetCodeTextPrimary)
                     }
-                    .padding(24)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(24)
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack {
-                            Text("Current Value")
-                                .foregroundColor(.leetCodeTextSecondary)
-                            Spacer()
-                            Text("\(coins)")
-                                .font(.title3)
-                                .foregroundColor(.leetCodeTextPrimary)
-                                .fontWeight(.bold)
-                        }
+
+                    // Current value display
+                    HStack {
+                        Text("Current Value")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .foregroundColor(.leetCodeTextSecondary)
+                        Spacer()
+                        Text("\(coins)")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundColor(.leetCodeTextPrimary)
                     }
-                    .padding(24)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(24)
-                    
+                    .padding(20)
+                    .background(Color.cardBackground)
+                    .cornerRadius(16)
+                    .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+
                     Spacer()
                 }
-                .padding()
+                .padding(20)
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -67,7 +65,7 @@ struct EditCoinsView: View {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .foregroundColor(.white)
+                    .foregroundColor(.leetCodeTextSecondary)
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -77,11 +75,12 @@ struct EditCoinsView: View {
                             dismiss()
                         }
                     }
-                    .fontWeight(.bold)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundColor(inputValue.isEmpty ? .gray : .leetCodeOrange)
+                    .disabled(inputValue.isEmpty)
                 }
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
     }
 }
