@@ -4,11 +4,13 @@ struct SettingsView: View {
     @EnvironmentObject var dataManager: DataManager
     @State private var reminderTimes: [Date]
     @State private var reminderFrequency: ReminderFrequency
+    @State private var magicNotificationsEnabled: Bool
 
     init() {
         let settings = DataManager().userData.notificationSettings
         _reminderTimes = State(initialValue: settings.dailyReminderTimes)
         _reminderFrequency = State(initialValue: settings.reminderFrequency)
+        _magicNotificationsEnabled = State(initialValue: settings.magicNotificationsEnabled)
     }
 
     var body: some View {
@@ -138,6 +140,59 @@ struct SettingsView: View {
                                 .background(Color.cardBackground)
                                 .cornerRadius(16)
                                 .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                                
+                                // Magic Notifications Section
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Toggle(isOn: $magicNotificationsEnabled) {
+                                        HStack(spacing: 12) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.purple.opacity(0.12))
+                                                    .frame(width: 40, height: 40)
+                                                
+                                                Image(systemName: "wand.and.stars")
+                                                    .font(.system(size: 18))
+                                                    .foregroundColor(.purple)
+                                            }
+                                            
+                                            Text("Magic Notifications")
+                                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                                .foregroundColor(.leetCodeTextPrimary)
+                                        }
+                                    }
+                                    .toggleStyle(SwitchToggleStyle(tint: .leetCodeOrange))
+                                    .padding(16)
+                                    .onChange(of: magicNotificationsEnabled) { _ in
+                                        updateSettings()
+                                    }
+                                    
+                                    if magicNotificationsEnabled {
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "trophy.fill")
+                                                    .font(.system(size: 14))
+                                                    .foregroundColor(.leetCodeYellow)
+                                                Text("Saturday Contest Reminders")
+                                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                    .foregroundColor(.leetCodeTextSecondary)
+                                            }
+                                            
+                                            HStack(spacing: 8) {
+                                                Image(systemName: "sparkles")
+                                                    .font(.system(size: 14))
+                                                    .foregroundColor(.leetCodeOrange)
+                                                Text("Random Encouragements & Updates")
+                                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                    .foregroundColor(.leetCodeTextSecondary)
+                                            }
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.bottom, 16)
+                                    }
+                                }
+                                .background(Color.cardBackground)
+                                .cornerRadius(16)
+                                .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
                             }
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
@@ -154,6 +209,7 @@ struct SettingsView: View {
             let settings = dataManager.userData.notificationSettings
             reminderTimes = settings.dailyReminderTimes
             reminderFrequency = settings.reminderFrequency
+            magicNotificationsEnabled = settings.magicNotificationsEnabled
         }
     }
 
@@ -163,14 +219,12 @@ struct SettingsView: View {
         let newSettings = NotificationSettings(
             enableNotifications: anyActivityEnabled,
             dailyReminderTimes: reminderTimes,
-            reminderFrequency: reminderFrequency
+            reminderFrequency: reminderFrequency,
+            magicNotificationsEnabled: magicNotificationsEnabled
         )
         dataManager.updateNotificationSettings(newSettings)
 
-        NotificationManager.shared.scheduleDailyNotifications(
-            for: dataManager.userData.activities,
-            settings: newSettings
-        )
+        NotificationManager.shared.scheduleNotifications(userData: dataManager.userData)
     }
 
     private func adjustTimesForFrequency() {
@@ -274,14 +328,12 @@ struct ActivityToggleRow: View {
                 let updatedSettings = NotificationSettings(
                     enableNotifications: anyActivityEnabled,
                     dailyReminderTimes: dataManager.userData.notificationSettings.dailyReminderTimes,
-                    reminderFrequency: dataManager.userData.notificationSettings.reminderFrequency
+                    reminderFrequency: dataManager.userData.notificationSettings.reminderFrequency,
+                    magicNotificationsEnabled: dataManager.userData.notificationSettings.magicNotificationsEnabled
                 )
                 dataManager.updateNotificationSettings(updatedSettings)
 
-                NotificationManager.shared.scheduleDailyNotifications(
-                    for: dataManager.userData.activities,
-                    settings: updatedSettings
-                )
+                NotificationManager.shared.scheduleNotifications(userData: dataManager.userData)
             }
         )
     }

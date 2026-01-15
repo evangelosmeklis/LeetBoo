@@ -419,6 +419,8 @@ struct AddCoinsSheet: View {
     @EnvironmentObject var dataManager: DataManager
     
     @State private var showingTimeTravel = false
+    @State private var customAmount = ""
+    @FocusState private var isCustomAmountFocused: Bool
     
     let options: [CoinOption] = [
         CoinOption(title: "Daily Check-in", description: "Login to the app", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen),
@@ -533,7 +535,74 @@ struct AddCoinsSheet: View {
                                 }
                             }
                             .padding(.horizontal, 20)
-                        }
+                            }
+                            .padding(.horizontal, 20)
+                            
+                            // Custom Amount
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Custom Entry")
+                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                                    .textCase(.uppercase)
+                                    .tracking(0.5)
+                                    .padding(.horizontal, 20)
+                                
+                                HStack(spacing: 16) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.12))
+                                            .frame(width: 44, height: 44)
+                                        
+                                        Image(systemName: "pencil")
+                                            .font(.system(size: 20))
+                                            .foregroundColor(.leetCodeTextSecondary)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Custom Amount")
+                                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                                            .foregroundColor(.leetCodeTextPrimary)
+                                        
+                                        TextField("Enter coins...", text: $customAmount)
+                                            .keyboardType(.numberPad)
+                                            .font(.system(size: 14, design: .rounded))
+                                            .focused($isCustomAmountFocused)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        if let amount = Int(customAmount), amount > 0 {
+                                            dataManager.addCoins(amount)
+                                            customAmount = ""
+                                            isCustomAmountFocused = false
+                                            dismiss()
+                                        }
+                                    }) {
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 16, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .frame(width: 32, height: 32)
+                                            .background(
+                                                Circle()
+                                                    .fill(Int(customAmount) ?? 0 > 0 ? Color.leetCodeOrange : Color.gray.opacity(0.3))
+                                            )
+                                    }
+                                    .disabled((Int(customAmount) ?? 0) <= 0)
+                                    .animation(.easeInOut, value: customAmount)
+                                }
+                                .padding(16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .fill(Color.cardBackground)
+                                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                                )
+                                .padding(.horizontal, 20)
+                            }
 
                         // Summary
                         VStack(alignment: .leading, spacing: 16) {
