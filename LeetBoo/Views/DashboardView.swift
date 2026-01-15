@@ -5,6 +5,7 @@ struct DashboardView: View {
     @State private var showingEditCoins = false
     @State private var showingEditTarget = false
     @State private var showingAddCoins = false
+    @State private var showingEditMonthlyRate = false
 
     // Animation states
     @State private var appearAnimation = false
@@ -23,17 +24,34 @@ struct DashboardView: View {
                 VStack(spacing: 0) {
                     // Banners at the top
                     VStack(spacing: 8) {
-                        if dataManager.showDailyBanner {
+                        if dataManager.showDailyCheckInBanner {
                             CheckInBannerView(
-                                activityType: .daily,
+                                activityType: .dailyCheckIn,
                                 onConfirm: {
                                     withAnimation {
-                                        dataManager.confirmCheckIn(for: .daily)
+                                        dataManager.confirmCheckIn(for: .dailyCheckIn)
                                     }
                                 },
                                 onDismiss: {
                                     withAnimation {
-                                        dataManager.dismissBanner(for: .daily)
+                                        dataManager.dismissBanner(for: .dailyCheckIn)
+                                    }
+                                }
+                            )
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                        }
+
+                        if dataManager.showDailyProblemBanner {
+                            CheckInBannerView(
+                                activityType: .dailyProblem,
+                                onConfirm: {
+                                    withAnimation {
+                                        dataManager.confirmCheckIn(for: .dailyProblem)
+                                    }
+                                },
+                                onDismiss: {
+                                    withAnimation {
+                                        dataManager.dismissBanner(for: .dailyProblem)
                                     }
                                 }
                             )
@@ -61,17 +79,25 @@ struct DashboardView: View {
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 20) {
+                            // Header
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Welcome")
+                                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                    Text("LeetCoder")
+                                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                                        .foregroundStyle(Color.leetCodeGradient)
+                                }
+                                Spacer()
+                            }
+                            .padding(.bottom, 4)
+
                             // Main progress card
                             progressCard
                                 .offset(y: appearAnimation ? 0 : 30)
                                 .opacity(appearAnimation ? 1 : 0)
                                 .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: appearAnimation)
-
-                            // Quick actions
-                            quickActionsCard
-                                .offset(y: appearAnimation ? 0 : 30)
-                                .opacity(appearAnimation ? 1 : 0)
-                                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2), value: appearAnimation)
 
                             // Estimation card
                             estimationCard
@@ -88,15 +114,7 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Welcome")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .foregroundColor(.leetCodeTextSecondary)
-                        Text("LeetCoder")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.leetCodeGradient)
-                    }
-                    .padding(.top, 8)
+                    EmptyView()
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -109,6 +127,9 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showingAddCoins) {
                 AddCoinsSheet()
+            }
+            .sheet(isPresented: $showingEditMonthlyRate) {
+                EditMonthlyRateView()
             }
         }
         .preferredColorScheme(.light)
@@ -213,48 +234,7 @@ struct DashboardView: View {
         }
     }
 
-    private var quickActionsCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Quick Actions")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(.leetCodeTextSecondary)
-                .textCase(.uppercase)
-                .tracking(0.5)
 
-            HStack(spacing: 12) {
-                QuickActionButton(
-                    icon: "checkmark.circle.fill",
-                    label: "Check-in",
-                    value: "+1",
-                    color: .leetCodeGreen
-                ) {
-                    dataManager.addCoins(1)
-                }
-
-                QuickActionButton(
-                    icon: "brain.head.profile.fill",
-                    label: "Problem",
-                    value: "+10",
-                    color: .leetCodeOrange
-                ) {
-                    dataManager.addCoins(10)
-                }
-
-                QuickActionButton(
-                    icon: "star.fill",
-                    label: "Bonus",
-                    value: "+5",
-                    color: .leetCodeYellow
-                ) {
-                    dataManager.addCoins(5)
-                }
-            }
-        }
-        .padding(20)
-        .background(Color.cardBackground)
-        .cornerRadius(20)
-        .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
-    }
 
     private var estimationCard: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -313,9 +293,15 @@ struct DashboardView: View {
                             .font(.system(size: 14, weight: .medium, design: .rounded))
                             .foregroundColor(.leetCodeTextSecondary)
                         Spacer()
-                        Text("\(dataManager.userData.estimatedMonthlyCoins) coins/mo")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        Button(action: { showingEditMonthlyRate = true }) {
+                            HStack(spacing: 4) {
+                                Text("\(dataManager.userData.estimatedMonthlyCoins) coins/mo")
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 12))
+                            }
                             .foregroundColor(.leetCodeOrange)
+                        }
                     }
                 }
                 .padding(16)
@@ -394,7 +380,18 @@ struct ScaleButtonStyle: ButtonStyle {
 struct AddCoinsSheet: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var dataManager: DataManager
-    @State private var coinsToAdd: String = ""
+    
+    let options: [CoinOption] = [
+        CoinOption(title: "Daily Check-in", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen),
+        CoinOption(title: "Daily Problem", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange),
+        CoinOption(title: "Weekly Luck", coins: 10, icon: "clover.fill", color: .leetCodeGreen),
+        CoinOption(title: "Weekly Contest", coins: 5, icon: "trophy.fill", color: .leetCodeYellow),
+        CoinOption(title: "Bi-Weekly Contest", coins: 5, icon: "trophy", color: .leetCodeYellow),
+        CoinOption(title: "Both Contests", coins: 35, icon: "trophy.circle.fill", color: .leetCodeOrange),
+        CoinOption(title: "30 Day Streak", coins: 30, icon: "flame.fill", color: .leetCodeOrange),
+        CoinOption(title: "25 Challenges", coins: 25, icon: "star.circle.fill", color: .leetCodeYellow),
+        CoinOption(title: "Month Complete", coins: 50, icon: "crown.fill", color: .leetCodeYellow)
+    ]
 
     var body: some View {
         NavigationView {
@@ -402,158 +399,186 @@ struct AddCoinsSheet: View {
                 Color.pageBackground.ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        // Quick Actions
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Quick Actions")
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Horizontal Options
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Quick Add")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundColor(.leetCodeTextSecondary)
                                 .textCase(.uppercase)
                                 .tracking(0.5)
+                                .padding(.horizontal, 20)
 
-                            HStack(spacing: 12) {
-                                Button(action: {
-                                    dataManager.addCoins(1)
-                                    dismiss()
-                                }) {
-                                    VStack(spacing: 12) {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.leetCodeGreen.opacity(0.12))
-                                                .frame(width: 56, height: 56)
-
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .font(.system(size: 28))
-                                                .foregroundColor(.leetCodeGreen)
+                            VStack(spacing: 12) {
+                                ForEach(options) { option in
+                                    Button(action: {
+                                        dataManager.addCoins(option.coins)
+                                        dismiss()
+                                    }) {
+                                        HStack(spacing: 16) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(option.color.opacity(0.12))
+                                                    .frame(width: 44, height: 44)
+                                                
+                                                Image(systemName: option.icon)
+                                                    .font(.system(size: 20))
+                                                    .foregroundColor(option.color)
+                                            }
+                                            
+                                            Text(option.title)
+                                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                                .foregroundColor(.leetCodeTextPrimary)
+                                            
+                                            Spacer()
+                                            
+                                            Text("+\(option.coins)")
+                                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                                .foregroundColor(option.color)
                                         }
-
-                                        Text("Daily Check-in")
-                                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                                            .foregroundColor(.leetCodeTextPrimary)
-
-                                        Text("+1")
-                                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                                            .foregroundColor(.leetCodeGreen)
+                                        .padding(12)
+                                        .background(Color.cardBackground)
+                                        .cornerRadius(16)
+                                        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
                                     }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 20)
-                                    .background(Color.cardBackground)
-                                    .cornerRadius(20)
-                                    .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                                    .buttonStyle(ScaleButtonStyle())
                                 }
-                                .buttonStyle(ScaleButtonStyle())
-
-                                Button(action: {
-                                    dataManager.addCoins(10)
-                                    dismiss()
-                                }) {
-                                    VStack(spacing: 12) {
-                                        ZStack {
-                                            Circle()
-                                                .fill(Color.leetCodeOrange.opacity(0.12))
-                                                .frame(width: 56, height: 56)
-
-                                            Image(systemName: "brain.head.profile.fill")
-                                                .font(.system(size: 28))
-                                                .foregroundColor(.leetCodeOrange)
-                                        }
-
-                                        Text("Daily Problem")
-                                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                                            .foregroundColor(.leetCodeTextPrimary)
-
-                                        Text("+10")
-                                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                                            .foregroundColor(.leetCodeOrange)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 20)
-                                    .background(Color.cardBackground)
-                                    .cornerRadius(20)
-                                    .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
-                                }
-                                .buttonStyle(ScaleButtonStyle())
                             }
+                            .padding(.horizontal, 20)
                         }
 
-                        // Manual input
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Custom Amount")
+                        // Summary
+                        VStack(alignment: .leading, spacing: 16) {
+                             Text("Current Status")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundColor(.leetCodeTextSecondary)
                                 .textCase(.uppercase)
                                 .tracking(0.5)
-
-                            TextField("Enter amount", text: $coinsToAdd)
-                                .keyboardType(.numberPad)
-                                .font(.system(size: 32, weight: .semibold, design: .rounded))
-                                .padding(20)
-                                .background(Color.cardBackground)
-                                .cornerRadius(16)
-                                .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
-                                .foregroundColor(.leetCodeTextPrimary)
-                        }
-
-                        // Summary card
-                        VStack(spacing: 16) {
+                                .padding(.horizontal, 20)
+                            
                             HStack {
-                                Text("Current Total")
-                                    .font(.system(size: 15, weight: .medium, design: .rounded))
-                                    .foregroundColor(.leetCodeTextSecondary)
-                                Spacer()
-                                Text("\(dataManager.userData.currentCoins)")
-                                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                                    .foregroundColor(.leetCodeTextPrimary)
-                            }
-
-                            if let coins = Int(coinsToAdd), coins > 0 {
-                                Divider()
-
-                                HStack {
-                                    Text("New Total")
-                                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Total Coins")
+                                        .font(.system(size: 14, weight: .medium, design: .rounded))
                                         .foregroundColor(.leetCodeTextSecondary)
-                                    Spacer()
-                                    Text("\(dataManager.userData.currentCoins + coins)")
-                                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                                        .foregroundColor(.leetCodeGreen)
+                                    Text("\(dataManager.userData.currentCoins)")
+                                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                                        .foregroundColor(.leetCodeTextPrimary)
                                 }
+                                Spacer()
                             }
+                            .padding(20)
+                            .background(Color.cardBackground)
+                            .cornerRadius(20)
+                            .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
+                            .padding(.horizontal, 20)
                         }
-                        .padding(20)
-                        .background(Color.cardBackground)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
-
-                        Spacer(minLength: 40)
                     }
-                    .padding(20)
+                    .padding(.vertical, 24)
                 }
             }
             .navigationTitle("Add Coins")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(.leetCodeTextSecondary)
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add") {
-                        if let coins = Int(coinsToAdd), coins > 0 {
-                            dataManager.addCoins(coins)
-                            dismiss()
-                        }
-                    }
                     .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundColor(coinsToAdd.isEmpty || Int(coinsToAdd) ?? 0 <= 0 ? .gray : .leetCodeOrange)
-                    .disabled(coinsToAdd.isEmpty || Int(coinsToAdd) ?? 0 <= 0)
+                    .foregroundColor(.leetCodeOrange)
                 }
             }
         }
         .preferredColorScheme(.light)
+    }
+}
+
+struct CoinOption: Identifiable {
+    let id = UUID()
+    let title: String
+    let coins: Int
+    let icon: String
+    let color: Color
+}
+
+struct EditMonthlyRateView: View {
+    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var dataManager: DataManager
+    @State private var rateText: String = ""
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Color.pageBackground.ignoresSafeArea()
+                
+                VStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Monthly Rate")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundColor(.leetCodeTextSecondary)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                        
+                        TextField("Coins per month", text: $rateText)
+                            .keyboardType(.numberPad)
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .padding(20)
+                            .background(Color.cardBackground)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+                            
+                        Text("This value determines the estimated time to reach your target.")
+                            .font(.system(size: 14, design: .rounded))
+                            .foregroundColor(.leetCodeTextSecondary)
+                            .padding(.top, 8)
+                    }
+                    
+                    if dataManager.userData.customMonthlyRate != nil {
+                        Button(action: {
+                            dataManager.updateCustomMonthlyRate(nil)
+                            dismiss()
+                        }) {
+                            Text("Reset to Automatic Calculation")
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                .foregroundColor(.leetCodeOrange)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.leetCodeOrange.opacity(0.1))
+                                .cornerRadius(12)
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                .padding(24)
+            }
+            .navigationTitle("Edit Rate")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(.leetCodeTextSecondary)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        if let rate = Int(rateText), rate > 0 {
+                            dataManager.updateCustomMonthlyRate(rate)
+                            dismiss()
+                        }
+                    }
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(rateText.isEmpty ? .gray : .leetCodeOrange)
+                    .disabled(rateText.isEmpty)
+                }
+            }
+        }
+        .onAppear {
+            if let currentRate = dataManager.userData.customMonthlyRate {
+                rateText = "\(currentRate)"
+            } else {
+                rateText = "\(dataManager.userData.estimatedMonthlyCoins)"
+            }
+        }
     }
 }
 

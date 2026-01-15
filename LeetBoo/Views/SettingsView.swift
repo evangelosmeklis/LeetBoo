@@ -115,7 +115,7 @@ struct SettingsView: View {
                                             Image(systemName: "info.circle.fill")
                                                 .font(.system(size: 14))
                                                 .foregroundColor(.leetCodeTextSecondary)
-                                            Text("Daily reminders: \(reminderFrequency.count) per day")
+                                            Text("Check-in & problem reminders: \(reminderFrequency.count) per day each")
                                                 .font(.system(size: 13, weight: .medium, design: .rounded))
                                                 .foregroundColor(.leetCodeTextSecondary)
                                         }
@@ -207,12 +207,12 @@ struct ActivityToggleRow: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(activity.type == .daily ? Color.leetCodeOrange.opacity(0.12) : Color.leetCodeYellow.opacity(0.12))
+                        .fill(iconBackgroundColor)
                         .frame(width: 40, height: 40)
 
-                    Image(systemName: activity.type == .daily ? "brain.head.profile.fill" : "star.fill")
+                    Image(systemName: iconName)
                         .font(.system(size: 18))
-                        .foregroundColor(activity.type == .daily ? .leetCodeOrange : .leetCodeYellow)
+                        .foregroundColor(iconColor)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -229,6 +229,39 @@ struct ActivityToggleRow: View {
         }
         .toggleStyle(SwitchToggleStyle(tint: .leetCodeOrange))
         .padding(.horizontal, 16)
+    }
+
+    private var iconName: String {
+        switch activity.type {
+        case .dailyCheckIn:
+            return "checkmark.circle.fill"
+        case .dailyProblem:
+            return "brain.head.profile.fill"
+        case .weeklyLuck:
+            return "star.fill"
+        }
+    }
+
+    private var iconColor: Color {
+        switch activity.type {
+        case .dailyCheckIn:
+            return .leetCodeGreen
+        case .dailyProblem:
+            return .leetCodeOrange
+        case .weeklyLuck:
+            return .leetCodeYellow
+        }
+    }
+
+    private var iconBackgroundColor: Color {
+        switch activity.type {
+        case .dailyCheckIn:
+            return Color.leetCodeGreen.opacity(0.12)
+        case .dailyProblem:
+            return Color.leetCodeOrange.opacity(0.12)
+        case .weeklyLuck:
+            return Color.leetCodeYellow.opacity(0.12)
+        }
     }
 
     private var binding: Binding<Bool> {

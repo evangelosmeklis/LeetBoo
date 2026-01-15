@@ -58,8 +58,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         let identifier = notification.request.identifier
 
         // Extract activity type from identifier
-        if identifier.starts(with: "daily_reminder_") {
-            dataManager?.triggerCheckInBanner(for: .daily)
+        if identifier.starts(with: "daily_checkin_reminder_") {
+            dataManager?.triggerCheckInBanner(for: .dailyCheckIn)
+        } else if identifier.starts(with: "daily_problem_reminder_") {
+            dataManager?.triggerCheckInBanner(for: .dailyProblem)
         } else if identifier == "weekly_luck_reminder" {
             dataManager?.triggerCheckInBanner(for: .weeklyLuck)
         }
