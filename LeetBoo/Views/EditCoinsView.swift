@@ -32,10 +32,16 @@ struct EditCoinsView: View {
                         TextField("Coins", text: $inputValue)
                             .keyboardType(.numberPad)
                             .font(.system(size: 36, weight: .bold, design: .rounded))
-                            .padding(20)
-                            .background(Color.cardBackground)
-                            .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                            .padding(24)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.cardBackground)
+                                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                            )
                             .foregroundColor(.leetCodeTextPrimary)
                     }
 
@@ -49,10 +55,16 @@ struct EditCoinsView: View {
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundColor(.leetCodeTextPrimary)
                     }
-                    .padding(20)
-                    .background(Color.cardBackground)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                    .padding(24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.cardBackground)
+                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                    )
 
                     Spacer()
                 }

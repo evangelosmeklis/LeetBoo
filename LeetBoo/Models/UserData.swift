@@ -6,13 +6,16 @@ struct UserData: Codable {
     var activities: [Activity]
     var notificationSettings: NotificationSettings
     var dismissedBanners: [String: Date]
+    var activityLog: [ActivityLogEntry] = []
 
     init() {
         self.currentCoins = 0
         self.targetCoins = 1000
         self.activities = ActivityType.allCases.map { Activity(type: $0, isEnabled: false) }
         self.notificationSettings = NotificationSettings()
+        self.notificationSettings = NotificationSettings()
         self.dismissedBanners = [:]
+        self.activityLog = []
     }
 
     var enabledActivities: [Activity] {
@@ -37,6 +40,13 @@ struct UserData: Codable {
     var daysToTarget: Int {
         Int(ceil(monthsToTarget * 30))
     }
+}
+
+struct ActivityLogEntry: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    let activityType: ActivityType
+    let coinsEarned: Int
 }
 
 struct NotificationSettings: Codable {
