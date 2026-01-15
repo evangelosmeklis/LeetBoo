@@ -3,7 +3,8 @@ import Combine
 
 class DataManager: ObservableObject {
     @Published var userData: UserData
-    @Published var showDailyBanner: Bool = false
+    @Published var showDailyCheckInBanner: Bool = false
+    @Published var showDailyProblemBanner: Bool = false
     @Published var showWeeklyLuckBanner: Bool = false
 
     private let userDataKey = "leetBooUserData"
@@ -39,6 +40,11 @@ class DataManager: ObservableObject {
         saveData()
     }
 
+    func updateCustomMonthlyRate(_ rate: Int?) {
+        userData.customMonthlyRate = rate
+        saveData()
+    }
+
     func toggleActivity(_ activityType: ActivityType) {
         if let index = userData.activities.firstIndex(where: { $0.type == activityType }) {
             userData.activities[index].isEnabled.toggle()
@@ -69,11 +75,6 @@ class DataManager: ObservableObject {
     // MARK: - Check-In Banner Management
 
     func triggerCheckInBanner(for activityType: ActivityType) {
-        // Don't show if already confirmed today
-        if userData.hasConfirmedCheckInToday && Calendar.current.isDateInToday(userData.lastCheckInPromptDate ?? .distantPast) {
-            return
-        }
-
         // Check if activity is enabled
         guard let activity = userData.activities.first(where: { $0.type == activityType }),
               activity.isEnabled else {
@@ -85,10 +86,17 @@ class DataManager: ObservableObject {
             return
         }
 
+        // Don't show if dismissed today
+        if wasDismissedToday(activityType) {
+            return
+        }
+
         // Show appropriate banner
         switch activityType {
-        case .daily:
-            showDailyBanner = true
+        case .dailyCheckIn:
+            showDailyCheckInBanner = true
+        case .dailyProblem:
+            showDailyProblemBanner = true
         case .weeklyLuck:
             // Only show on Mondays
             if Calendar.current.component(.weekday, from: Date()) == 2 {
@@ -98,14 +106,17 @@ class DataManager: ObservableObject {
     }
 
     func checkAndShowBannersOnAppOpen() {
-        resetDailyCheckInConfirmation()
+        // Clear dismissals from previous days
+        clearOldDismissals()
 
         // Check each enabled activity
         for activity in userData.activities where activity.isEnabled {
-            if !activity.completedToday {
+            if !activity.completedToday && !wasDismissedToday(activity.type) {
                 switch activity.type {
-                case .daily:
-                    showDailyBanner = true
+                case .dailyCheckIn:
+                    showDailyCheckInBanner = true
+                case .dailyProblem:
+                    showDailyProblemBanner = true
                 case .weeklyLuck:
                     // Only on Mondays
                     if Calendar.current.component(.weekday, from: Date()) == 2 {
@@ -116,30 +127,47 @@ class DataManager: ObservableObject {
         }
     }
 
-    func resetDailyCheckInConfirmation() {
-        if !Calendar.current.isDateInToday(userData.lastCheckInPromptDate ?? .distantPast) {
-            userData.hasConfirmedCheckInToday = false
-            saveData()
+    private func wasDismissedToday(_ activityType: ActivityType) -> Bool {
+        guard let dismissalDate = userData.dismissedBanners[activityType.rawValue] else {
+            return false
         }
+        return Calendar.current.isDateInToday(dismissalDate)
+    }
+
+    private func clearOldDismissals() {
+        let calendar = Calendar.current
+        userData.dismissedBanners = userData.dismissedBanners.filter { _, date in
+            calendar.isDateInToday(date)
+        }
+        saveData()
     }
 
     func confirmCheckIn(for activityType: ActivityType) {
         // Add coins based on activity type
-        let coins = activityType == .daily ? 11 : 10
+        let coins: Int
+        switch activityType {
+        case .dailyCheckIn:
+            coins = 1
+        case .dailyProblem:
+            coins = 10
+        case .weeklyLuck:
+            coins = 10
+        }
         addCoins(coins)
 
         // Mark activity as completed
         markActivityDone(activityType)
 
-        // Update confirmation state
-        userData.hasConfirmedCheckInToday = true
-        userData.lastCheckInPromptDate = Date()
+        // Clear dismissal if any
+        userData.dismissedBanners.removeValue(forKey: activityType.rawValue)
         saveData()
 
         // Hide banner
         switch activityType {
-        case .daily:
-            showDailyBanner = false
+        case .dailyCheckIn:
+            showDailyCheckInBanner = false
+        case .dailyProblem:
+            showDailyProblemBanner = false
         case .weeklyLuck:
             showWeeklyLuckBanner = false
         }
@@ -149,9 +177,16 @@ class DataManager: ObservableObject {
     }
 
     func dismissBanner(for activityType: ActivityType) {
+        // Record dismissal
+        userData.dismissedBanners[activityType.rawValue] = Date()
+        saveData()
+
+        // Hide banner
         switch activityType {
-        case .daily:
-            showDailyBanner = false
+        case .dailyCheckIn:
+            showDailyCheckInBanner = false
+        case .dailyProblem:
+            showDailyProblemBanner = false
         case .weeklyLuck:
             showWeeklyLuckBanner = false
         }

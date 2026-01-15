@@ -1,13 +1,16 @@
 import Foundation
 
 enum ActivityType: String, Codable, CaseIterable {
-    case daily = "Daily"
+    case dailyCheckIn = "Daily Check-In"
+    case dailyProblem = "Daily Problem"
     case weeklyLuck = "Weekly Luck"
 
     var coinsPerMonth: Int {
         switch self {
-        case .daily:
-            return 330
+        case .dailyCheckIn:
+            return 30
+        case .dailyProblem:
+            return 300
         case .weeklyLuck:
             return 40
         }
@@ -15,8 +18,10 @@ enum ActivityType: String, Codable, CaseIterable {
 
     var description: String {
         switch self {
-        case .daily:
-            return "Daily problem + check-in (11 coins/day)"
+        case .dailyCheckIn:
+            return "Daily login reward (1 coin/day)"
+        case .dailyProblem:
+            return "Complete daily problem (10 coins/day)"
         case .weeklyLuck:
             return "Collect 10 coins every Monday"
         }
@@ -42,7 +47,7 @@ struct Activity: Identifiable, Codable {
         guard let lastDate = lastCompletedDate else { return }
 
         // For daily activities, reset if not today
-        if type == .daily {
+        if type == .dailyCheckIn || type == .dailyProblem {
             if !Calendar.current.isDateInToday(lastDate) {
                 completedToday = false
             }
@@ -51,7 +56,7 @@ struct Activity: Identifiable, Codable {
         else if type == .weeklyLuck {
             let calendar = Calendar.current
             let currentWeekday = calendar.component(.weekday, from: Date())
-            let lastWeekday = calendar.component(.weekday, from: lastDate)
+            _ = calendar.component(.weekday, from: lastDate) // lastWeekday unused
 
             // Reset if it's Monday and we last completed on a previous Monday (or earlier in week)
             if currentWeekday == 2 && !calendar.isDateInToday(lastDate) {

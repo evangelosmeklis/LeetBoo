@@ -22,27 +22,48 @@ class NotificationManager {
 
         for activity in enabledActivities {
             switch activity.type {
-            case .daily:
-                scheduleDailyReminders(settings: settings, calendar: calendar)
+            case .dailyCheckIn:
+                scheduleDailyCheckInReminders(settings: settings, calendar: calendar)
+            case .dailyProblem:
+                scheduleDailyProblemReminders(settings: settings, calendar: calendar)
             case .weeklyLuck:
                 scheduleWeeklyLuckReminder(settings: settings, calendar: calendar)
             }
         }
     }
 
-    private func scheduleDailyReminders(settings: NotificationSettings, calendar: Calendar) {
+    private func scheduleDailyCheckInReminders(settings: NotificationSettings, calendar: Calendar) {
         let reminderTimes = settings.dailyReminderTimes
 
         for (index, time) in reminderTimes.enumerated() {
             let content = UNMutableNotificationContent()
-            content.title = "LeetBoo Daily Reminder"
-            content.body = "Time to solve your daily Leetcode problem and check in! (11 coins)"
+            content.title = "Welcome Back!"
+            content.body = "Check in to LeetBoo and earn your daily coin! (+1)"
             content.sound = .default
 
-            var dateComponents = calendar.dateComponents([.hour, .minute], from: time)
+            let dateComponents = calendar.dateComponents([.hour, .minute], from: time)
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-            let identifier = "daily_reminder_\(index)"
+            let identifier = "daily_checkin_reminder_\(index)"
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+
+            UNUserNotificationCenter.current().add(request)
+        }
+    }
+
+    private func scheduleDailyProblemReminders(settings: NotificationSettings, calendar: Calendar) {
+        let reminderTimes = settings.dailyReminderTimes
+
+        for (index, time) in reminderTimes.enumerated() {
+            let content = UNMutableNotificationContent()
+            content.title = "LeetBoo Daily Problem"
+            content.body = "Time to solve your daily Leetcode problem! (+10)"
+            content.sound = .default
+
+            let dateComponents = calendar.dateComponents([.hour, .minute], from: time)
+
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+            let identifier = "daily_problem_reminder_\(index)"
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
 
             UNUserNotificationCenter.current().add(request)
@@ -71,10 +92,15 @@ class NotificationManager {
             let identifiersToRemove: [String]
 
             switch activityType {
-            case .daily:
-                // Remove all pending daily notifications for today
+            case .dailyCheckIn:
+                // Remove all pending daily check-in notifications
                 identifiersToRemove = requests
-                    .filter { $0.identifier.starts(with: "daily_reminder_") }
+                    .filter { $0.identifier.starts(with: "daily_checkin_reminder_") }
+                    .map { $0.identifier }
+            case .dailyProblem:
+                // Remove all pending daily problem notifications
+                identifiersToRemove = requests
+                    .filter { $0.identifier.starts(with: "daily_problem_reminder_") }
                     .map { $0.identifier }
             case .weeklyLuck:
                 // Remove weekly luck notification

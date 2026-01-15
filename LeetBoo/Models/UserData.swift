@@ -5,24 +5,27 @@ struct UserData: Codable {
     var targetCoins: Int
     var activities: [Activity]
     var notificationSettings: NotificationSettings
-    var lastCheckInPromptDate: Date?
-    var hasConfirmedCheckInToday: Bool
+    var dismissedBanners: [String: Date]
 
     init() {
         self.currentCoins = 0
         self.targetCoins = 1000
         self.activities = ActivityType.allCases.map { Activity(type: $0, isEnabled: false) }
         self.notificationSettings = NotificationSettings()
-        self.lastCheckInPromptDate = nil
-        self.hasConfirmedCheckInToday = false
+        self.dismissedBanners = [:]
     }
 
     var enabledActivities: [Activity] {
         activities.filter { $0.isEnabled }
     }
 
+    var customMonthlyRate: Int?
+    
     var estimatedMonthlyCoins: Int {
-        enabledActivities.reduce(0) { $0 + $1.type.coinsPerMonth }
+        if let customRate = customMonthlyRate {
+            return customRate
+        }
+        return enabledActivities.reduce(0) { $0 + $1.type.coinsPerMonth }
     }
 
     var monthsToTarget: Double {

@@ -47,18 +47,14 @@ struct CheckInBannerView: View {
                     }
 
                     Button(action: onConfirm) {
-                        HStack(spacing: 4) {
-                            Text("Yes")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                            Text("+\(coins)")
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(iconColor)
-                        .cornerRadius(12)
-                        .shadow(color: iconColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                        Text("+\(coins)")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(iconColor)
+                            .cornerRadius(12)
+                            .shadow(color: iconColor.opacity(0.3), radius: 8, x: 0, y: 4)
                     }
                 }
             }
@@ -84,7 +80,9 @@ struct CheckInBannerView: View {
 
     private var title: String {
         switch activityType {
-        case .daily:
+        case .dailyCheckIn:
+            return "Welcome back!"
+        case .dailyProblem:
             return "Did you complete today's problem?"
         case .weeklyLuck:
             return "It's Monday! Collect your weekly luck?"
@@ -93,8 +91,10 @@ struct CheckInBannerView: View {
 
     private var subtitle: String {
         switch activityType {
-        case .daily:
-            return "Daily check-in + problem"
+        case .dailyCheckIn:
+            return "Daily login reward"
+        case .dailyProblem:
+            return "Daily problem solved"
         case .weeklyLuck:
             return "Weekly bonus coins"
         }
@@ -102,7 +102,9 @@ struct CheckInBannerView: View {
 
     private var iconName: String {
         switch activityType {
-        case .daily:
+        case .dailyCheckIn:
+            return "checkmark.circle.fill"
+        case .dailyProblem:
             return "brain.head.profile.fill"
         case .weeklyLuck:
             return "star.fill"
@@ -111,7 +113,9 @@ struct CheckInBannerView: View {
 
     private var iconColor: Color {
         switch activityType {
-        case .daily:
+        case .dailyCheckIn:
+            return .leetCodeGreen
+        case .dailyProblem:
             return .leetCodeOrange
         case .weeklyLuck:
             return .leetCodeYellow
@@ -120,8 +124,10 @@ struct CheckInBannerView: View {
 
     private var coins: Int {
         switch activityType {
-        case .daily:
-            return 11
+        case .dailyCheckIn:
+            return 1
+        case .dailyProblem:
+            return 10
         case .weeklyLuck:
             return 10
         }
