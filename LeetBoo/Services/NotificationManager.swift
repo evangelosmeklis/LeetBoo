@@ -12,13 +12,14 @@ class NotificationManager {
         }
     }
 
-    func scheduleDailyNotifications(for activities: [Activity], settings: NotificationSettings) {
+    func scheduleNotifications(userData: UserData) {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
 
+        let settings = userData.notificationSettings
         guard settings.enableNotifications else { return }
 
         let calendar = Calendar.current
-        let enabledActivities = activities.filter { $0.isEnabled }
+        let enabledActivities = userData.activities.filter { $0.isEnabled }
 
         for activity in enabledActivities {
             switch activity.type {
@@ -29,6 +30,10 @@ class NotificationManager {
             case .weeklyLuck:
                 scheduleWeeklyLuckReminder(settings: settings, calendar: calendar)
             }
+        }
+        
+        if settings.magicNotificationsEnabled {
+            scheduleMagicNotifications(calendar: calendar)
         }
     }
 
@@ -85,6 +90,63 @@ class NotificationManager {
         let request = UNNotificationRequest(identifier: "weekly_luck_reminder", content: content, trigger: trigger)
 
         UNUserNotificationCenter.current().add(request)
+    }
+    
+    private func scheduleMagicNotifications(calendar: Calendar) {
+        scheduleContestReminders(calendar: calendar)
+        scheduleEncouragements(calendar: calendar)
+    }
+    
+    private func scheduleContestReminders(calendar: Calendar) {
+        let content = UNMutableNotificationContent()
+        content.title = "Contest Time! 🏆"
+        content.body = "The weekly contest is coming up. Get ready to compete!"
+        content.sound = .default
+        
+        var dateComponents = DateComponents()
+        dateComponents.weekday = 7 // Saturday
+        dateComponents.hour = 14 // 2:00 PM (Generic time)
+        dateComponents.minute = 0
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let request = UNNotificationRequest(identifier: "magic_contest_reminder", content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request)
+    }
+    
+    private func scheduleEncouragements(calendar: Calendar) {
+        // Schedule a few random encouragements for the upcoming week
+        // Since we can't truly randomize constantly without BG processing,
+        // we'll deterministic-ally pick a few time slots based on the current week.
+        
+        let messages = [
+            "Magic Update 🌟: You are on track for your monthly goals! Keep it up!",
+            "Magic Update 🔥: Consistency is key. You're doing great!",
+            "Magic Update 💎: Don't break the chain. Your future self will thank you!"
+        ]
+        
+        // Schedule for Tuesday at 11 AM and Thursday at 4 PM
+        let slots: [(weekday: Int, hour: Int, id: String)] = [
+            (3, 11, "magic_encouragement_1"), // Tuesday
+            (5, 16, "magic_encouragement_2")  // Thursday
+        ]
+        
+        for (index, slot) in slots.enumerated() {
+            let content = UNMutableNotificationContent()
+            content.title = "LeetBoo Magic"
+            content.body = messages[index % messages.count]
+            content.sound = .default
+            
+            var dateComponents = DateComponents()
+            dateComponents.weekday = slot.weekday
+            dateComponents.hour = slot.hour
+            dateComponents.minute = 0 // On the hour
+            
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+            let request = UNNotificationRequest(identifier: slot.id, content: content, trigger: trigger)
+            
+            UNUserNotificationCenter.current().add(request)
+        }
     }
 
     func suppressNotificationsForToday(activityType: ActivityType) {

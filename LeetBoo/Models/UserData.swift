@@ -53,16 +53,19 @@ struct NotificationSettings: Codable {
     var enableNotifications: Bool
     var dailyReminderTimes: [Date]
     var reminderFrequency: ReminderFrequency
+    var magicNotificationsEnabled: Bool = false
 
-    init(enableNotifications: Bool, dailyReminderTimes: [Date], reminderFrequency: ReminderFrequency) {
+    init(enableNotifications: Bool, dailyReminderTimes: [Date], reminderFrequency: ReminderFrequency, magicNotificationsEnabled: Bool = false) {
         self.enableNotifications = enableNotifications
         self.dailyReminderTimes = dailyReminderTimes
         self.reminderFrequency = reminderFrequency
+        self.magicNotificationsEnabled = magicNotificationsEnabled
     }
 
     init() {
         self.enableNotifications = true
         self.reminderFrequency = .twiceDaily
+        self.magicNotificationsEnabled = false
 
         // Default times: 9 AM and 6 PM
         var morning = DateComponents()
@@ -85,6 +88,7 @@ struct NotificationSettings: Codable {
         case dailyReminderTime
         case dailyReminderTimes
         case reminderFrequency
+        case magicNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -92,6 +96,7 @@ struct NotificationSettings: Codable {
 
         enableNotifications = try container.decode(Bool.self, forKey: .enableNotifications)
         reminderFrequency = try container.decode(ReminderFrequency.self, forKey: .reminderFrequency)
+        magicNotificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .magicNotificationsEnabled) ?? false
 
         // Try to decode new format first
         if let times = try? container.decode([Date].self, forKey: .dailyReminderTimes) {
@@ -117,6 +122,7 @@ struct NotificationSettings: Codable {
         try container.encode(enableNotifications, forKey: .enableNotifications)
         try container.encode(dailyReminderTimes, forKey: .dailyReminderTimes)
         try container.encode(reminderFrequency, forKey: .reminderFrequency)
+        try container.encode(magicNotificationsEnabled, forKey: .magicNotificationsEnabled)
     }
 
     private static func generateTimesFromSingle(_ baseTime: Date, frequency: ReminderFrequency) -> [Date] {
