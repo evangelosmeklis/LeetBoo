@@ -40,6 +40,134 @@ class DataManager: ObservableObject {
         saveData()
     }
 
+    // MARK: - Activity Logging & Progress
+
+    func logActivity(type: ActivityType, date: Date) {
+        let calendar = Calendar.current
+        
+        // Check if already logged for this date (to prevent duplicates for single-day activities)
+        // We only restrict duplicates for daily type activities on the same day
+        let alreadyLogged = userData.activityLog.contains { entry in
+            return entry.activityType == type && calendar.isDate(entry.date, inSameDayAs: date)
+        }
+        
+        if alreadyLogged {
+            return
+        }
+
+        // Add coins
+        // (If it's weekly luck, we might want to check week uniqueness, but keeping simple for now)
+        let coins = type == .dailyProblem ? 10 : (type == .dailyCheckIn ? 1 : 0) // Default values for log
+        // Note: The actual coin addition often happens in specific methods, but if we use this for time travel,
+        // we should add the coins here if they haven't been added.
+        // For Time Travel, we call this directly. For daily usage, we might call this alongside confirmCheckIn.
+        
+        // Let's rely on the caller to add coins via addCoins() if needed, OR handling it here.
+        // To allow Time Travel to add coins:
+        if type == .dailyCheckIn { addCoins(1) }
+        else if type == .dailyProblem { addCoins(10) }
+        
+        let newEntry = ActivityLogEntry(id: UUID(), date: date, activityType: type, coinsEarned: 0) // tracking coins separately for now
+        userData.activityLog.append(newEntry)
+        userData.activityLog.sort { $0.date < $1.date }
+        
+        saveData()
+    }
+    
+    func getCurrentStreak(for type: ActivityType) -> Int {
+        let calendar = Calendar.current
+        let today = Date()
+        
+        let logs = userData.activityLog
+            .filter { $0.activityType == type }
+            .sorted { $0.date > $1.date } // Newest first
+        
+        var streak = 0
+        var checkDate = today
+        
+        // Check if done today
+        if let first = logs.first, calendar.isDate(first.date, inSameDayAs: today) {
+            streak += 1
+            checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+        } else {
+            // If not done today, check if done yesterday (streak intact)
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+            if let first = logs.first, calendar.isDate(first.date, inSameDayAs: yesterday) {
+                // Streak continues from yesterday
+            } else {
+                // Streak broken
+                return 0
+            }
+            checkDate = yesterday
+        }
+        
+        // Check previous days
+        for i in 0..<logs.count {
+            if i == 0 && streak == 1 { continue } // Already counted today
+            
+            let logDate = logs[i].date
+            if calendar.isDate(logDate, inSameDayAs: checkDate) {
+                streak += 1
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate)!
+            } else if calendar.isDate(logDate, inSameDayAs: calendar.date(byAdding: .day, value: 1, to: checkDate)!) {
+                // Duplicate entry for same day, ignore
+                continue
+            } else {
+                // Gap found
+                break
+            }
+        }
+        
+        return streak
+    }
+    
+    func getMonthlyCount(for type: ActivityType) -> Int {
+        let calendar = Calendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.year, .month], from: now)
+        
+        let logs = userData.activityLog.filter { entry in
+            return entry.activityType == type &&
+                   calendar.isDate(entry.date, equalTo: now, toGranularity: .month) &&
+                   calendar.isDate(entry.date, equalTo: now, toGranularity: .year)
+        }
+        
+        // Count unique days
+        let uniqueDays = Set(logs.map { calendar.startOfDay(for: $0.date) })
+        return uniqueDays.count
+    }
+    
+    func getMissedDates(for type: ActivityType) -> [Date] {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        guard let range = calendar.range(of: .day, in: .month, for: now),
+              let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) else {
+            return []
+        }
+        
+        let dayCount = range.count
+        // Only check up to today
+        let dayOfMonth = calendar.component(.day, from: now)
+        
+        var missedDates: [Date] = []
+        
+        for day in 1...dayOfMonth {
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: monthStart) {
+                // Check if log exists for this date
+                let exists = userData.activityLog.contains { entry in
+                    return entry.activityType == type && calendar.isDate(entry.date, inSameDayAs: date)
+                }
+                
+                if !exists {
+                    missedDates.append(date)
+                }
+            }
+        }
+        
+        return missedDates.sorted(by: { $0 > $1 }) // Newest missed first
+    }
+
     func updateCustomMonthlyRate(_ rate: Int?) {
         userData.customMonthlyRate = rate
         saveData()
@@ -157,6 +285,9 @@ class DataManager: ObservableObject {
 
         // Mark activity as completed
         markActivityDone(activityType)
+        
+        // Log activity for history/streak
+        logActivity(type: activityType, date: Date())
 
         // Clear dismissal if any
         userData.dismissedBanners.removeValue(forKey: activityType.rawValue)

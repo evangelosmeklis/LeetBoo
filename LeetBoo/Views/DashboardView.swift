@@ -6,6 +6,10 @@ struct DashboardView: View {
     @State private var showingEditTarget = false
     @State private var showingAddCoins = false
     @State private var showingEditMonthlyRate = false
+    @State private var showingCoinInfo = false
+    @State private var showFireworks = false
+
+    // Animation states
 
     // Animation states
     @State private var appearAnimation = false
@@ -88,6 +92,7 @@ struct DashboardView: View {
                                     Text("LeetCoder")
                                         .font(.system(size: 28, weight: .bold, design: .rounded))
                                         .foregroundStyle(Color.leetCodeGradient)
+                                        .shadow(color: Color.leetCodeOrange.opacity(0.3), radius: 10, x: 0, y: 5)
                                 }
                                 Spacer()
                             }
@@ -118,10 +123,18 @@ struct DashboardView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddCoins = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(Color.leetCodeOrange)
+                    HStack(spacing: 8) {
+                        Button(action: { showingCoinInfo = true }) {
+                            Image(systemName: "questionmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(Color.leetCodeTextSecondary)
+                        }
+
+                        Button(action: { showingAddCoins = true }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(Color.leetCodeOrange)
+                        }
                     }
                 }
             }
@@ -131,8 +144,25 @@ struct DashboardView: View {
             .sheet(isPresented: $showingEditMonthlyRate) {
                 EditMonthlyRateView()
             }
+            .sheet(isPresented: $showingCoinInfo) {
+                CoinInfoView()
+            }
         }
         .preferredColorScheme(.light)
+        .overlay(
+            FireworksView(isActive: showFireworks)
+                .allowsHitTesting(false)
+        )
+        .onChange(of: dataManager.userData.currentCoins) { newCoins in
+            if newCoins >= dataManager.userData.targetCoins && !showFireworks {
+                showFireworks = true
+                
+                // Stop fireworks after 4 seconds
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                    showFireworks = false
+                }
+            }
+        }
         .onAppear {
             appearAnimation = true
             dataManager.checkAndResetDailyActivities()
@@ -163,6 +193,7 @@ struct DashboardView: View {
                     .frame(width: 200, height: 200)
                     .rotationEffect(.degrees(-90))
                     .animation(.spring(response: 0.8, dampingFraction: 0.7), value: progressPercentage)
+                    .shadow(color: Color.leetCodeOrange.opacity(0.2), radius: 10, x: 0, y: 0)
 
                 // Center content
                 VStack(spacing: 6) {
@@ -199,7 +230,8 @@ struct DashboardView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Color.pageBackground)
-                    .cornerRadius(14)
+                    .cornerRadius(20)
+                    .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
                 }
 
                 Button(action: { showingEditTarget = true }) {
@@ -214,14 +246,19 @@ struct DashboardView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(Color.pageBackground)
-                    .cornerRadius(14)
+                    .cornerRadius(20)
+                    .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
                 }
             }
         }
         .padding(24)
         .background(Color.cardBackground)
-        .cornerRadius(24)
-        .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
+        .cornerRadius(32)
+        .shadow(color: Color.black.opacity(0.08), radius: 24, x: 0, y: 12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 32)
+                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+        )
         .sheet(isPresented: $showingEditCoins) {
             EditCoinsView(title: "Edit Current Coins", coins: dataManager.userData.currentCoins) { newValue in
                 dataManager.updateCurrentCoins(newValue)
@@ -381,16 +418,18 @@ struct AddCoinsSheet: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var dataManager: DataManager
     
+    @State private var showingTimeTravel = false
+    
     let options: [CoinOption] = [
-        CoinOption(title: "Daily Check-in", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen),
-        CoinOption(title: "Daily Problem", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange),
-        CoinOption(title: "Weekly Luck", coins: 10, icon: "clover.fill", color: .leetCodeGreen),
-        CoinOption(title: "Weekly Contest", coins: 5, icon: "trophy.fill", color: .leetCodeYellow),
-        CoinOption(title: "Bi-Weekly Contest", coins: 5, icon: "trophy", color: .leetCodeYellow),
-        CoinOption(title: "Both Contests", coins: 35, icon: "trophy.circle.fill", color: .leetCodeOrange),
-        CoinOption(title: "30 Day Streak", coins: 30, icon: "flame.fill", color: .leetCodeOrange),
-        CoinOption(title: "25 Challenges", coins: 25, icon: "star.circle.fill", color: .leetCodeYellow),
-        CoinOption(title: "Month Complete", coins: 50, icon: "crown.fill", color: .leetCodeYellow)
+        CoinOption(title: "Daily Check-in", description: "Login to the app", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen),
+        CoinOption(title: "Daily Problem", description: "Solve the daily question", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange),
+        CoinOption(title: "Weekly Luck", description: "Claim on contest page", coins: 10, icon: "clover.fill", color: .leetCodeGreen),
+        CoinOption(title: "Weekly Contest", description: "Participate in contest", coins: 5, icon: "trophy.fill", color: .leetCodeYellow),
+        CoinOption(title: "Bi-Weekly Contest", description: "Participate in bi-weekly", coins: 5, icon: "trophy", color: .leetCodeYellow),
+        CoinOption(title: "Both Contests", description: "Do both contests in a week", coins: 35, icon: "trophy.circle.fill", color: .leetCodeOrange),
+        CoinOption(title: "30 Day Check-in Streak", description: "Checked in purely for 30 days", coins: 30, icon: "flame.fill", color: .leetCodeOrange),
+        CoinOption(title: "Monthly Badge (25)", description: "Completed 25 daily challenges", coins: 25, icon: "star.circle.fill", color: .leetCodeYellow),
+        CoinOption(title: "Perfect Month", description: "All daily challenges in a month", coins: 50, icon: "crown.fill", color: .leetCodeYellow)
     ]
 
     var body: some View {
@@ -400,6 +439,36 @@ struct AddCoinsSheet: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 24) {
+                        // Time Travel Button
+                        Button(action: { showingTimeTravel = true }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.leetCodeOrange)
+                                
+                                Text("Forgot to log something? Time Travel")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.cardBackground)
+                                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                            )
+                        }
+                        .padding(.horizontal, 20)
+                        
                         // Horizontal Options
                         VStack(alignment: .leading, spacing: 16) {
                             Text("Quick Add")
@@ -412,7 +481,13 @@ struct AddCoinsSheet: View {
                             VStack(spacing: 12) {
                                 ForEach(options) { option in
                                     Button(action: {
-                                        dataManager.addCoins(option.coins)
+                                        if option.title.contains("Daily Check-in") {
+                                            dataManager.logActivity(type: .dailyCheckIn, date: Date())
+                                        } else if option.title.contains("Daily Problem") {
+                                            dataManager.logActivity(type: .dailyProblem, date: Date())
+                                        } else {
+                                            dataManager.addCoins(option.coins)
+                                        }
                                         dismiss()
                                     }) {
                                         HStack(spacing: 16) {
@@ -426,9 +501,16 @@ struct AddCoinsSheet: View {
                                                     .foregroundColor(option.color)
                                             }
                                             
-                                            Text(option.title)
-                                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                                .foregroundColor(.leetCodeTextPrimary)
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(option.title)
+                                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                                    .foregroundColor(.leetCodeTextPrimary)
+                                                
+                                                Text(option.description)
+                                                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                                                    .foregroundColor(.leetCodeTextSecondary)
+                                                    .lineLimit(1)
+                                            }
                                             
                                             Spacer()
                                             
@@ -436,10 +518,16 @@ struct AddCoinsSheet: View {
                                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                                 .foregroundColor(option.color)
                                         }
-                                        .padding(12)
-                                        .background(Color.cardBackground)
-                                        .cornerRadius(16)
-                                        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+                                        .padding(16)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 24)
+                                                .fill(Color.cardBackground)
+                                                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 24)
+                                                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                                        )
                                     }
                                     .buttonStyle(ScaleButtonStyle())
                                 }
@@ -490,12 +578,16 @@ struct AddCoinsSheet: View {
             }
         }
         .preferredColorScheme(.light)
+        .sheet(isPresented: $showingTimeTravel) {
+            TimeTravelView()
+        }
     }
 }
 
 struct CoinOption: Identifiable {
     let id = UUID()
     let title: String
+    let description: String
     let coins: Int
     let icon: String
     let color: Color
@@ -522,10 +614,17 @@ struct EditMonthlyRateView: View {
                         TextField("Coins per month", text: $rateText)
                             .keyboardType(.numberPad)
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .padding(20)
-                            .background(Color.cardBackground)
-                            .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .padding(24)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.cardBackground)
+                                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                            )
                             
                         Text("This value determines the estimated time to reach your target.")
                             .font(.system(size: 14, design: .rounded))
@@ -661,12 +760,14 @@ struct TargetCoinsPickerView: View {
                                     }
                                 }
                                 .padding(16)
-                                .background(Color.cardBackground)
-                                .cornerRadius(16)
-                                .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .fill(Color.cardBackground)
+                                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                                )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(showCustomInput ? Color.leetCodeOrange : Color.clear, lineWidth: 2)
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(showCustomInput ? Color.leetCodeOrange : Color.white.opacity(0.5), lineWidth: showCustomInput ? 2 : 1)
                                 )
                             }
                             .buttonStyle(ScaleButtonStyle())
@@ -693,10 +794,16 @@ struct TargetCoinsPickerView: View {
                                 .font(.system(size: 20, weight: .bold, design: .rounded))
                                 .foregroundColor(.leetCodeTextPrimary)
                         }
-                        .padding(20)
-                        .background(Color.cardBackground)
-                        .cornerRadius(16)
-                        .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(Color.cardBackground)
+                                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                        )
 
                         Spacer(minLength: 40)
                     }
@@ -728,8 +835,8 @@ struct TargetCoinsPickerView: View {
                     .disabled(!canSave)
                 }
             }
-        }
         .preferredColorScheme(.light)
+    }
     }
 
     private var canSave: Bool {
@@ -769,12 +876,14 @@ struct RewardOptionRow: View {
                 }
             }
             .padding(16)
-            .background(Color.cardBackground)
-            .cornerRadius(16)
-            .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.cardBackground)
+                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+            )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Color.leetCodeOrange : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(isSelected ? Color.leetCodeOrange : Color.white.opacity(0.5), lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(ScaleButtonStyle())

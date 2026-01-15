@@ -19,11 +19,17 @@ struct ContentView: View {
                 }
                 .tag(0)
 
+            ProgressView()
+                .tabItem {
+                    Label("Progress", systemImage: "chart.bar.fill")
+                }
+                .tag(1)
+
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
-                .tag(1)
+                .tag(2)
         }
         .tint(.leetCodeOrange)
         .preferredColorScheme(.light)
