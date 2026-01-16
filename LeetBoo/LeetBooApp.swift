@@ -12,6 +12,7 @@ import UserNotifications
 struct LeetBooApp: App {
     @StateObject private var dataManager = DataManager()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         NotificationManager.shared.requestAuthorization { _ in }
@@ -23,6 +24,16 @@ struct LeetBooApp: App {
                 .environmentObject(dataManager)
                 .onAppear {
                     appDelegate.dataManager = dataManager
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        dataManager.checkAndResetDailyActivities()
+                        dataManager.checkAndShowBannersOnAppOpen()
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+                    dataManager.checkAndResetDailyActivities()
+                    dataManager.checkAndShowBannersOnAppOpen()
                 }
         }
     }
