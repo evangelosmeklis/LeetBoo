@@ -1,31 +1,46 @@
 import SwiftUI
 
 extension Color {
-    // Tech-inspired colors with more vibrancy
-    static let leetCodeDark = Color(hex: "0A0E27")
-    static let leetCodeDarkLighter = Color(hex: "1A1F3A")
+    // WHOOP-inspired dark theme colors
+    static let whoopDark = Color(hex: "0D1117")
+    static let whoopDarkCard = Color(hex: "161B22")
+    static let whoopDarkElevated = Color(hex: "21262D")
+    static let whoopDarkBorder = Color(hex: "30363D")
+    
+    // Accent colors - teal/cyan like WHOOP
+    static let whoopTeal = Color(hex: "00D9C0")
+    static let whoopTealBright = Color(hex: "00FFE0")
+    static let whoopGreen = Color(hex: "2DD881")
+    static let whoopGreenBright = Color(hex: "56FFA4")
+    static let whoopBlue = Color(hex: "58A6FF")
+    static let whoopBlueBright = Color(hex: "79C0FF")
+    
+    // Legacy colors for compatibility
+    static let leetCodeDark = Color(hex: "0D1117")
+    static let leetCodeDarkLighter = Color(hex: "161B22")
     static let leetCodeOrange = Color(hex: "FF6B35")
     static let leetCodeOrangeBright = Color(hex: "FF8C42")
-    static let leetCodeGreen = Color(hex: "00D9A5")
-    static let leetCodeGreenBright = Color(hex: "00FFB8")
+    static let leetCodeGreen = Color(hex: "00D9C0")
+    static let leetCodeGreenBright = Color(hex: "00FFE0")
     static let leetCodeYellow = Color(hex: "FFD93D")
     static let leetCodeYellowBright = Color(hex: "FFE66D")
     static let leetCodeRed = Color(hex: "FF4757")
-    static let leetCodeBlue = Color(hex: "4ECDC4")
+    static let leetCodeBlue = Color(hex: "58A6FF")
     static let leetCodePurple = Color(hex: "A78BFA")
 
-    // Text colors with better contrast
-    static let leetCodeTextPrimary = Color(hex: "1A1F3A")
-    static let leetCodeTextSecondary = Color(hex: "6B7280")
+    // Text colors for dark theme
+    static let leetCodeTextPrimary = Color(hex: "F0F6FC")
+    static let leetCodeTextSecondary = Color(hex: "8B949E")
+    static let leetCodeTextTertiary = Color(hex: "6E7681")
 
-    // Modern background colors
-    static let cardBackground = Color(hex: "FFFFFF")
-    static let pageBackground = Color(hex: "F0F4F8")
-    static let subtleGray = Color(hex: "E5E7EB")
+    // Background colors - now dark
+    static let cardBackground = Color(hex: "161B22")
+    static let pageBackground = Color(hex: "0D1117")
+    static let subtleGray = Color(hex: "30363D")
     
-    // Glass effect colors
-    static let glassBackground = Color.white.opacity(0.7)
-    static let glassBorder = Color.white.opacity(0.3)
+    // Glass effect colors for dark theme
+    static let glassBackground = Color(hex: "161B22").opacity(0.9)
+    static let glassBorder = Color(hex: "30363D").opacity(0.5)
 
     // Tech gradients
     static let leetCodeGradient = LinearGradient(
@@ -41,33 +56,40 @@ extension Color {
     )
     
     static let greenGradient = LinearGradient(
-        gradient: Gradient(colors: [Color(hex: "00D9A5"), Color(hex: "00FFB8")]),
+        gradient: Gradient(colors: [Color(hex: "00D9C0"), Color(hex: "00FFE0")]),
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    
+    static let tealGradient = LinearGradient(
+        gradient: Gradient(colors: [Color(hex: "00D9C0"), Color(hex: "2DD881")]),
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
     
     static let blueGradient = LinearGradient(
-        gradient: Gradient(colors: [Color(hex: "4ECDC4"), Color(hex: "6EE7E0")]),
+        gradient: Gradient(colors: [Color(hex: "58A6FF"), Color(hex: "79C0FF")]),
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
     static let backgroundGradient = LinearGradient(
-        gradient: Gradient(colors: [Color(hex: "F0F4F8"), Color(hex: "E8F0F5")]),
+        gradient: Gradient(colors: [Color(hex: "0D1117"), Color(hex: "161B22")]),
         startPoint: .top,
         endPoint: .bottom
     )
 
     static let cardGradient = LinearGradient(
-        gradient: Gradient(colors: [Color.white, Color(hex: "FAFBFC")]),
+        gradient: Gradient(colors: [Color(hex: "161B22"), Color(hex: "21262D")]),
         startPoint: .top,
         endPoint: .bottom
     )
     
-    // Neon glow colors
-    static let neonOrange = Color(hex: "FF6B35").opacity(0.6)
-    static let neonGreen = Color(hex: "00D9A5").opacity(0.6)
-    static let neonYellow = Color(hex: "FFD93D").opacity(0.6)
+    // Glow colors for dark theme
+    static let neonOrange = Color(hex: "FF6B35").opacity(0.4)
+    static let neonGreen = Color(hex: "00D9C0").opacity(0.4)
+    static let neonYellow = Color(hex: "FFD93D").opacity(0.4)
+    static let neonTeal = Color(hex: "00D9C0").opacity(0.4)
     
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
