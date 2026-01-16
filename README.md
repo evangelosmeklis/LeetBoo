@@ -2,6 +2,8 @@
 
 A comprehensive iOS app to help you track your Leetcode coins, stay consistent with your practice, and reach your coin goals through smart notifications and progress tracking.
 
+**Disclaimer**: LeetBoo is not affiliated with, endorsed by, or connected to LeetCode. LeetCode is a registered trademark of LeetCode, Inc. This app is an independent tool created to help users track their LeetCode coin progress.
+
 ## Features
 
 ### Coin Tracking
