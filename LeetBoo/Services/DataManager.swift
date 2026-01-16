@@ -40,6 +40,15 @@ class DataManager: ObservableObject {
         saveData()
     }
 
+    func isOneTimeMissionCompleted(_ key: String) -> Bool {
+        userData.completedOneTimeMissions.contains(key)
+    }
+
+    func completeOneTimeMission(_ key: String) {
+        userData.completedOneTimeMissions.insert(key)
+        saveData()
+    }
+
     // MARK: - Activity Logging & Progress
 
     func logActivity(type: ActivityType, date: Date) {
@@ -147,13 +156,15 @@ class DataManager: ObservableObject {
         }
         
         let dayCount = range.count
-        // Only check up to today
-        let dayOfMonth = calendar.component(.day, from: now)
+        let todayStart = calendar.startOfDay(for: now)
         
         var missedDates: [Date] = []
         
-        for day in 1...dayOfMonth {
+        for day in 1...dayCount {
             if let date = calendar.date(byAdding: .day, value: day - 1, to: monthStart) {
+                if date >= todayStart {
+                    continue
+                }
                 // Check if log exists for this date
                 let exists = userData.activityLog.contains { entry in
                     return entry.activityType == type && calendar.isDate(entry.date, inSameDayAs: date)

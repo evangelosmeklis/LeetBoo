@@ -422,16 +422,37 @@ struct AddCoinsSheet: View {
     @State private var customAmount = ""
     @FocusState private var isCustomAmountFocused: Bool
     
-    let options: [CoinOption] = [
-        CoinOption(title: "Daily Check-in", description: "Login to the app", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen),
-        CoinOption(title: "Daily Problem", description: "Solve the daily question", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange),
-        CoinOption(title: "Weekly Luck", description: "Claim on contest page", coins: 10, icon: "clover.fill", color: .leetCodeGreen),
-        CoinOption(title: "Weekly Contest", description: "Participate in contest", coins: 5, icon: "trophy.fill", color: .leetCodeYellow),
-        CoinOption(title: "Bi-Weekly Contest", description: "Participate in bi-weekly", coins: 5, icon: "trophy", color: .leetCodeYellow),
-        CoinOption(title: "Both Contests", description: "Do both contests in a week", coins: 35, icon: "trophy.circle.fill", color: .leetCodeOrange),
-        CoinOption(title: "30 Day Check-in Streak", description: "Checked in purely for 30 days", coins: 30, icon: "flame.fill", color: .leetCodeOrange),
-        CoinOption(title: "Monthly Badge (25)", description: "Completed 25 daily challenges", coins: 25, icon: "star.circle.fill", color: .leetCodeYellow),
-        CoinOption(title: "Perfect Month", description: "All daily challenges in a month", coins: 50, icon: "crown.fill", color: .leetCodeYellow)
+    let sections: [CoinSection] = [
+        CoinSection(title: "Check-in Missions", options: [
+            CoinOption(title: "Daily Check-in", description: "Log in each day", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen),
+            CoinOption(title: "30 Day Check-in Streak", description: "Check in 30 days straight", coins: 30, icon: "flame.fill", color: .leetCodeOrange),
+            CoinOption(title: "Complete Daily Challenge", description: "Finish the daily challenge", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange),
+            CoinOption(title: "Weekly Premium Challenges", description: "Complete weekly premium challenges", coins: 35, icon: "star.circle.fill", color: .leetCodeYellow),
+            CoinOption(title: "Lucky Monday", description: "Claim on contest page", coins: 10, icon: "clover.fill", color: .leetCodeGreen)
+        ]),
+        CoinSection(title: "Contribution Missions", options: [
+            CoinOption(title: "Contribute a Testcase", description: "Submit a new testcase", coins: 100, icon: "doc.text.fill", color: .leetCodeGreen),
+            CoinOption(title: "Contribute a Question", description: "Submit a new question", coins: 1000, icon: "questionmark.circle.fill", color: .leetCodeOrange),
+            CoinOption(title: "File Content Issue", description: "Report a feedback repo issue", coins: 100, icon: "exclamationmark.bubble.fill", color: .leetCodeYellow),
+            CoinOption(title: "Report Contest Violation", description: "Report a contest violation", coins: 100, icon: "flag.fill", color: .leetCodeOrange)
+        ]),
+        CoinSection(title: "Contest Missions", options: [
+            CoinOption(title: "Join a Contest", description: "Join weekly or biweekly", coins: 5, icon: "trophy.fill", color: .leetCodeYellow),
+            CoinOption(title: "Join Weekly + Biweekly", description: "Join both contests in a week", coins: 35, icon: "trophy.circle.fill", color: .leetCodeOrange),
+            CoinOption(title: "1st Place Contest", description: "Finish first in a contest", coins: 5000, icon: "crown.fill", color: .leetCodeYellow),
+            CoinOption(title: "2nd Place Contest", description: "Finish second in a contest", coins: 2500, icon: "medal.fill", color: .leetCodeOrange),
+            CoinOption(title: "3rd Place Contest", description: "Finish third in a contest", coins: 1000, icon: "medal", color: .leetCodeOrange),
+            CoinOption(title: "Top 50 Contest", description: "Place in the top 50", coins: 300, icon: "star.circle.fill", color: .leetCodeYellow),
+            CoinOption(title: "Top 100 Contest", description: "Place in the top 100", coins: 100, icon: "star.fill", color: .leetCodeYellow),
+            CoinOption(title: "Top 200 Contest", description: "Place in the top 200", coins: 50, icon: "star.lefthalf.fill", color: .leetCodeYellow),
+            CoinOption(title: "First Contest Submission", description: "Submit to your first contest", coins: 200, icon: "paperplane.fill", color: .leetCodeGreen, oneTimeKey: "firstContestSubmission")
+        ]),
+        CoinSection(title: "Profile Missions", options: [
+            CoinOption(title: "Connect LinkedIn", description: "One-time LinkedIn connect", coins: 10, icon: "link.circle.fill", color: .leetCodeGreen, oneTimeKey: "connectLinkedIn"),
+            CoinOption(title: "Connect Google", description: "One-time Google connect", coins: 10, icon: "globe", color: .leetCodeGreen, oneTimeKey: "connectGoogle"),
+            CoinOption(title: "Connect GitHub", description: "One-time GitHub connect", coins: 10, icon: "chevron.left.slash.chevron.right", color: .leetCodeGreen, oneTimeKey: "connectGitHub"),
+            CoinOption(title: "Connect Facebook", description: "One-time Facebook connect", coins: 10, icon: "person.crop.circle.badge.checkmark", color: .leetCodeGreen, oneTimeKey: "connectFacebook")
+        ])
     ]
 
     var body: some View {
@@ -472,71 +493,95 @@ struct AddCoinsSheet: View {
                         .padding(.horizontal, 20)
                         
                         // Horizontal Options
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Quick Add")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-                                .padding(.horizontal, 20)
+                        VStack(alignment: .leading, spacing: 24) {
+                            ForEach(sections) { section in
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text(section.title)
+                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .textCase(.uppercase)
+                                        .tracking(0.5)
 
-                            VStack(spacing: 12) {
-                                ForEach(options) { option in
-                                    Button(action: {
-                                        if option.title.contains("Daily Check-in") {
-                                            dataManager.logActivity(type: .dailyCheckIn, date: Date())
-                                        } else if option.title.contains("Daily Problem") {
-                                            dataManager.logActivity(type: .dailyProblem, date: Date())
-                                        } else {
-                                            dataManager.addCoins(option.coins)
-                                        }
-                                        dismiss()
-                                    }) {
-                                        HStack(spacing: 16) {
-                                            ZStack {
-                                                Circle()
-                                                    .fill(option.color.opacity(0.12))
-                                                    .frame(width: 44, height: 44)
-                                                
-                                                Image(systemName: option.icon)
-                                                    .font(.system(size: 20))
-                                                    .foregroundColor(option.color)
+                                    VStack(spacing: 12) {
+                                        ForEach(section.options) { option in
+                                            let isCompleted = option.oneTimeKey.map { dataManager.isOneTimeMissionCompleted($0) } ?? false
+
+                                            Button(action: {
+                                                if option.oneTimeKey != nil && isCompleted {
+                                                    return
+                                                }
+
+                                                if option.title.contains("Daily Check-in") {
+                                                    dataManager.logActivity(type: .dailyCheckIn, date: Date())
+                                                } else if option.title.contains("Daily Challenge") {
+                                                    dataManager.logActivity(type: .dailyProblem, date: Date())
+                                                } else if option.title.contains("Lucky Monday") {
+                                                    dataManager.confirmCheckIn(for: .weeklyLuck)
+                                                } else {
+                                                    dataManager.addCoins(option.coins)
+                                                }
+
+                                                if let key = option.oneTimeKey {
+                                                    dataManager.completeOneTimeMission(key)
+                                                }
+
+                                                dismiss()
+                                            }) {
+                                                HStack(spacing: 16) {
+                                                    ZStack {
+                                                        Circle()
+                                                            .fill(option.color.opacity(0.12))
+                                                            .frame(width: 44, height: 44)
+
+                                                        Image(systemName: option.icon)
+                                                            .font(.system(size: 20))
+                                                            .foregroundColor(option.color)
+                                                    }
+
+                                                    VStack(alignment: .leading, spacing: 2) {
+                                                        Text(option.title)
+                                                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                                                            .foregroundColor(.leetCodeTextPrimary)
+
+                                                        Text(option.description)
+                                                            .font(.system(size: 12, weight: .regular, design: .rounded))
+                                                            .foregroundColor(.leetCodeTextSecondary)
+                                                            .lineLimit(1)
+                                                    }
+
+                                                    Spacer()
+
+                                                    if isCompleted {
+                                                        Text("Completed")
+                                                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                                                            .foregroundColor(.leetCodeGreen)
+                                                    } else {
+                                                        Text("+\(option.coins)")
+                                                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                                                            .foregroundColor(option.color)
+                                                    }
+                                                }
+                                                .padding(16)
+                                                .background(
+                                                    RoundedRectangle(cornerRadius: 24)
+                                                        .fill(Color.cardBackground)
+                                                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                                                )
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 24)
+                                                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                                                )
                                             }
-                                            
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text(option.title)
-                                                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                                                    .foregroundColor(.leetCodeTextPrimary)
-                                                
-                                                Text(option.description)
-                                                    .font(.system(size: 12, weight: .regular, design: .rounded))
-                                                    .foregroundColor(.leetCodeTextSecondary)
-                                                    .lineLimit(1)
-                                            }
-                                            
-                                            Spacer()
-                                            
-                                            Text("+\(option.coins)")
-                                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                                .foregroundColor(option.color)
+                                            .disabled(isCompleted)
+                                            .opacity(isCompleted ? 0.6 : 1)
+                                            .buttonStyle(ScaleButtonStyle())
                                         }
-                                        .padding(16)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 24)
-                                                .fill(Color.cardBackground)
-                                                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
-                                        )
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 24)
-                                                .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                                        )
                                     }
-                                    .buttonStyle(ScaleButtonStyle())
                                 }
+                                .padding(.horizontal, 20)
                             }
-                            .padding(.horizontal, 20)
-                            }
-                            .padding(.horizontal, 20)
+                        }
+                        .padding(.horizontal, 20)
                             
                             // Custom Amount
                             VStack(alignment: .leading, spacing: 16) {
@@ -653,6 +698,12 @@ struct AddCoinsSheet: View {
     }
 }
 
+struct CoinSection: Identifiable {
+    let id = UUID()
+    let title: String
+    let options: [CoinOption]
+}
+
 struct CoinOption: Identifiable {
     let id = UUID()
     let title: String
@@ -660,6 +711,16 @@ struct CoinOption: Identifiable {
     let coins: Int
     let icon: String
     let color: Color
+    let oneTimeKey: String?
+
+    init(title: String, description: String, coins: Int, icon: String, color: Color, oneTimeKey: String? = nil) {
+        self.title = title
+        self.description = description
+        self.coins = coins
+        self.icon = icon
+        self.color = color
+        self.oneTimeKey = oneTimeKey
+    }
 }
 
 struct EditMonthlyRateView: View {

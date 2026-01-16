@@ -7,6 +7,7 @@ struct UserData: Codable {
     var notificationSettings: NotificationSettings
     var dismissedBanners: [String: Date]
     var activityLog: [ActivityLogEntry] = []
+    var completedOneTimeMissions: Set<String> = []
 
     init() {
         self.currentCoins = 0
@@ -16,6 +17,43 @@ struct UserData: Codable {
         self.notificationSettings = NotificationSettings()
         self.dismissedBanners = [:]
         self.activityLog = []
+        self.completedOneTimeMissions = []
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case currentCoins
+        case targetCoins
+        case activities
+        case notificationSettings
+        case dismissedBanners
+        case activityLog
+        case customMonthlyRate
+        case completedOneTimeMissions
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        currentCoins = try container.decodeIfPresent(Int.self, forKey: .currentCoins) ?? 0
+        targetCoins = try container.decodeIfPresent(Int.self, forKey: .targetCoins) ?? 1000
+        activities = try container.decodeIfPresent([Activity].self, forKey: .activities) ?? ActivityType.allCases.map { Activity(type: $0, isEnabled: false) }
+        notificationSettings = try container.decodeIfPresent(NotificationSettings.self, forKey: .notificationSettings) ?? NotificationSettings()
+        dismissedBanners = try container.decodeIfPresent([String: Date].self, forKey: .dismissedBanners) ?? [:]
+        activityLog = try container.decodeIfPresent([ActivityLogEntry].self, forKey: .activityLog) ?? []
+        customMonthlyRate = try container.decodeIfPresent(Int.self, forKey: .customMonthlyRate)
+        let missions = try container.decodeIfPresent([String].self, forKey: .completedOneTimeMissions) ?? []
+        completedOneTimeMissions = Set(missions)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(currentCoins, forKey: .currentCoins)
+        try container.encode(targetCoins, forKey: .targetCoins)
+        try container.encode(activities, forKey: .activities)
+        try container.encode(notificationSettings, forKey: .notificationSettings)
+        try container.encode(dismissedBanners, forKey: .dismissedBanners)
+        try container.encode(activityLog, forKey: .activityLog)
+        try container.encode(customMonthlyRate, forKey: .customMonthlyRate)
+        try container.encode(Array(completedOneTimeMissions), forKey: .completedOneTimeMissions)
     }
 
     var enabledActivities: [Activity] {

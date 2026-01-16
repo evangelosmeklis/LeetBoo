@@ -162,7 +162,7 @@ struct SettingsView: View {
                                     }
                                     .toggleStyle(SwitchToggleStyle(tint: .leetCodeOrange))
                                     .padding(16)
-                                    .onChange(of: magicNotificationsEnabled) { _ in
+                                    .onChange(of: magicNotificationsEnabled) { _, _ in
                                         updateSettings()
                                     }
                                     
