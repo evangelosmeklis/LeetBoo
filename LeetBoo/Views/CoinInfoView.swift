@@ -77,41 +77,85 @@ struct CoinInfoView: View {
     }
     
     private func infoSection(title: String, items: [(String, String, String)]) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(.leetCodeTextSecondary)
-                .textCase(.uppercase)
-                .tracking(0.5)
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(Color.leetCodeOrange.opacity(0.15))
+                        .frame(width: 28, height: 28)
+                    
+                    Image(systemName: "info.circle.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.leetCodeOrange)
+                }
+                
+                Text(title)
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .foregroundColor(.leetCodeTextSecondary)
+                    .tracking(1.5)
+            }
             
-            VStack(spacing: 12) {
+            VStack(spacing: 14) {
                 ForEach(items, id: \.0) { item in
-                    HStack(alignment: .top, spacing: 16) {
-                        VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .top, spacing: 18) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(item.0)
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
                                 .foregroundColor(.leetCodeTextPrimary)
                             
                             Text(item.2)
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .font(.system(size: 14, weight: .medium, design: .monospaced))
                                 .foregroundColor(.leetCodeTextSecondary)
+                                .tracking(0.3)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         
                         Spacer()
                         
                         Text("+\(item.1)")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundColor(.leetCodeOrange)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(Color.leetCodeOrange.opacity(0.1))
-                            .cornerRadius(8)
+                            .font(.system(size: 15, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.leetCodeOrange, Color.leetCodeOrangeBright],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                            .shadow(color: Color.leetCodeOrange.opacity(0.3), radius: 6, x: 0, y: 3)
                     }
-                    .padding(16)
-                    .background(Color.cardBackground)
-                    .cornerRadius(16)
-                    .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+                    .padding(18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.glassBackground)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1.5
+                            )
+                    )
+                    .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: 6)
                 }
             }
         }

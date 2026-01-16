@@ -21,7 +21,7 @@ struct ContentView: View {
 
             ProgressView()
                 .tabItem {
-                    Label("Progress", systemImage: "chart.bar.fill")
+                    Label("Progress", systemImage: "chart.line.uptrend.xyaxis")
                 }
                 .tag(1)
 
@@ -33,6 +33,16 @@ struct ContentView: View {
         }
         .tint(.leetCodeOrange)
         .preferredColorScheme(.light)
+        .onAppear {
+            // Modern tab bar appearance
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor.white
+            appearance.shadowColor = UIColor.black.withAlphaComponent(0.1)
+            
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
     }
 }
 

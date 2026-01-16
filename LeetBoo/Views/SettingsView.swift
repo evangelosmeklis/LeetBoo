@@ -21,105 +21,177 @@ struct SettingsView: View {
                     .ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 24) {
                         // Activities Section
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Notifications")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
+                        VStack(alignment: .leading, spacing: 18) {
+                            HStack(spacing: 10) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.leetCodeOrange.opacity(0.15))
+                                        .frame(width: 28, height: 28)
+                                    
+                                    Image(systemName: "bell.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.leetCodeOrange)
+                                }
+                                
+                                Text("NOTIFICATIONS")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                                    .tracking(1.5)
+                            }
 
                             VStack(spacing: 0) {
                                 ForEach(dataManager.userData.activities) { activity in
                                     ActivityToggleRow(activity: activity)
                                     if activity.id != dataManager.userData.activities.last?.id {
                                         Divider()
-                                            .padding(.horizontal, 16)
+                                            .background(Color.subtleGray.opacity(0.5))
+                                            .padding(.horizontal, 20)
                                     }
                                 }
                             }
-                            .background(Color.cardBackground)
-                            .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.glassBackground)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                    )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1.5
+                                    )
+                            )
+                            .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
                         }
 
                         if dataManager.userData.activities.contains(where: { $0.isEnabled }) {
                             // Magic Notifications Section
-                            VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 16) {
                                 Toggle(isOn: $magicNotificationsEnabled) {
-                                    HStack(spacing: 12) {
+                                    HStack(spacing: 14) {
                                         ZStack {
                                             Circle()
-                                                .fill(Color.purple.opacity(0.12))
-                                                .frame(width: 40, height: 40)
+                                                .fill(Color.leetCodePurple.opacity(0.15))
+                                                .frame(width: 44, height: 44)
                                             
                                             Image(systemName: "wand.and.stars")
-                                                .font(.system(size: 18))
-                                                .foregroundColor(.purple)
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundColor(.leetCodePurple)
                                         }
                                         
                                         Text("Magic Notifications")
-                                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                            .font(.system(size: 17, weight: .bold, design: .rounded))
                                             .foregroundColor(.leetCodeTextPrimary)
                                     }
                                 }
                                 .toggleStyle(SwitchToggleStyle(tint: .leetCodeOrange))
-                                .padding(16)
+                                .padding(20)
                                 .onChange(of: magicNotificationsEnabled) { _, _ in
                                     updateSettings()
                                 }
                                 
                                 if magicNotificationsEnabled {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        HStack(spacing: 8) {
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        HStack(spacing: 12) {
                                             Image(systemName: "trophy.fill")
-                                                .font(.system(size: 14))
+                                                .font(.system(size: 16))
                                                 .foregroundColor(.leetCodeYellow)
                                             Text("Weekend contest reminders")
-                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .font(.system(size: 14, weight: .medium, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(0.3)
                                         }
                                         
-                                        HStack(spacing: 8) {
+                                        HStack(spacing: 12) {
                                             Image(systemName: "chart.line.uptrend.xyaxis")
-                                                .font(.system(size: 14))
+                                                .font(.system(size: 16))
                                                 .foregroundColor(.leetCodeOrange)
                                             Text("Monthly coins + goal progress")
-                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .font(.system(size: 14, weight: .medium, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(0.3)
                                         }
                                         
-                                        HStack(spacing: 8) {
+                                        HStack(spacing: 12) {
                                             Image(systemName: "lightbulb.fill")
-                                                .font(.system(size: 14))
+                                                .font(.system(size: 16))
                                                 .foregroundColor(.leetCodeYellow)
                                             Text("Tips for earning more Leetcoins")
-                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .font(.system(size: 14, weight: .medium, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(0.3)
                                         }
                                     }
-                                    .padding(.horizontal, 16)
-                                    .padding(.bottom, 16)
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom, 20)
                                 }
                             }
-                            .background(Color.cardBackground)
-                            .cornerRadius(16)
-                            .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.glassBackground)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                    )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1.5
+                                    )
+                            )
+                            .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
 
                             // Notification Settings Section
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Preferences")
-                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.leetCodeTextSecondary)
-                                    .textCase(.uppercase)
-                                    .tracking(0.5)
+                            VStack(alignment: .leading, spacing: 18) {
+                                HStack(spacing: 10) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.leetCodeBlue.opacity(0.15))
+                                            .frame(width: 28, height: 28)
+                                        
+                                        Image(systemName: "slider.horizontal.3")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.leetCodeBlue)
+                                    }
+                                    
+                                    Text("PREFERENCES")
+                                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .tracking(1.5)
+                                }
 
-                                VStack(spacing: 16) {
+                                VStack(spacing: 18) {
                                     // Frequency picker
                                     HStack {
                                         Text("Frequency")
-                                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                                            .font(.system(size: 16, weight: .semibold, design: .rounded))
                                             .foregroundColor(.leetCodeTextPrimary)
                                         Spacer()
                                         Picker("Frequency", selection: Binding(
@@ -137,17 +209,24 @@ struct SettingsView: View {
                                         .pickerStyle(.menu)
                                         .tint(.leetCodeOrange)
                                     }
-                                    .padding(16)
-                                    .background(Color.pageBackground)
-                                    .cornerRadius(12)
+                                    .padding(18)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.glassBackground)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.glassBorder, lineWidth: 1)
+                                    )
 
                                     // Reminder times
                                     VStack(spacing: 12) {
                                         ForEach(0..<reminderFrequency.count, id: \.self) { index in
                                             HStack {
                                                 Text(getReminderLabel(for: index))
-                                                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                                                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
                                                     .foregroundColor(.leetCodeTextPrimary)
+                                                    .tracking(0.3)
 
                                                 Spacer()
 
@@ -167,41 +246,78 @@ struct SettingsView: View {
                                                 .labelsHidden()
                                                 .tint(.leetCodeOrange)
                                             }
-                                            .padding(16)
-                                            .background(Color.pageBackground)
-                                            .cornerRadius(12)
+                                            .padding(18)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .fill(Color.glassBackground)
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Color.glassBorder, lineWidth: 1)
+                                            )
                                         }
                                     }
 
                                     // Info text
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        HStack(spacing: 8) {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        HStack(spacing: 10) {
                                             Image(systemName: "info.circle.fill")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.leetCodeTextSecondary)
+                                                .font(.system(size: 16))
+                                                .foregroundColor(.leetCodeBlue)
                                             Text("Check-in & problem reminders: \(reminderFrequency.count) per day each")
-                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .font(.system(size: 13, weight: .medium, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(0.3)
                                         }
 
-                                        HStack(spacing: 8) {
+                                        HStack(spacing: 10) {
                                             Image(systemName: "star.fill")
-                                                .font(.system(size: 14))
+                                                .font(.system(size: 16))
                                                 .foregroundColor(.leetCodeYellow)
                                             Text("Weekly Luck: Every Monday at first reminder time")
-                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .font(.system(size: 13, weight: .medium, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(0.3)
                                         }
                                     }
-                                    .padding(16)
+                                    .padding(18)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color.pageBackground)
-                                    .cornerRadius(12)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.glassBackground)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.glassBorder, lineWidth: 1)
+                                    )
                                 }
-                                .padding(16)
-                                .background(Color.cardBackground)
-                                .cornerRadius(16)
-                                .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+                                .padding(20)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .fill(Color.glassBackground)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 24)
+                                                .fill(
+                                                    LinearGradient(
+                                                        colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                                        startPoint: .topLeading,
+                                                        endPoint: .bottomTrailing
+                                                    )
+                                                )
+                                        )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1.5
+                                        )
+                                )
+                                .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
                             }
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
@@ -267,31 +383,32 @@ struct ActivityToggleRow: View {
 
     var body: some View {
         Toggle(isOn: binding) {
-            HStack(spacing: 14) {
+            HStack(spacing: 16) {
                 ZStack {
                     Circle()
                         .fill(iconBackgroundColor)
-                        .frame(width: 40, height: 40)
+                        .frame(width: 44, height: 44)
 
                     Image(systemName: iconName)
-                        .font(.system(size: 18))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(iconColor)
                 }
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(activity.type.rawValue)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(.leetCodeTextPrimary)
 
                     Text(activity.type.description)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 13, weight: .medium, design: .monospaced))
                         .foregroundColor(.leetCodeTextSecondary)
+                        .tracking(0.3)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 14)
         }
         .toggleStyle(SwitchToggleStyle(tint: .leetCodeOrange))
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 20)
     }
 
     private var iconName: String {

@@ -10,9 +10,8 @@ struct DashboardView: View {
     @State private var showFireworks = false
 
     // Animation states
-
-    // Animation states
     @State private var appearAnimation = false
+    @State private var shimmerRotation: Double = 0
 
     var progressPercentage: Double {
         min(1.0, Double(dataManager.userData.currentCoins) / Double(max(1, dataManager.userData.targetCoins)))
@@ -82,27 +81,41 @@ struct DashboardView: View {
                     .zIndex(1)
 
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 20) {
-                            // Header
+                        VStack(spacing: 24) {
+                            // Header with tech aesthetic
                             HStack {
-                                VStack(alignment: .leading, spacing: 2) {
+                                VStack(alignment: .leading, spacing: 6) {
                                     let dayOfMonth = Calendar.current.component(.day, from: Date())
 
-                                    Text("Day \(dayOfMonth)")
-                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.leetCodeTextSecondary)
+                                    HStack(spacing: 8) {
+                                        Text("DAY")
+                                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.leetCodeTextSecondary)
+                                            .tracking(2)
+                                        Text("\(dayOfMonth)")
+                                            .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.leetCodeOrange)
+                                    }
 
-                                    Text("Welcome")
-                                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    Text("Welcome back,")
+                                        .font(.system(size: 15, weight: .medium, design: .rounded))
                                         .foregroundColor(.leetCodeTextSecondary)
-                                    Text("LeetCoder")
-                                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                                        .foregroundStyle(Color.leetCodeGradient)
-                                        .shadow(color: Color.leetCodeOrange.opacity(0.3), radius: 10, x: 0, y: 5)
+                                    
+                                    HStack(spacing: 8) {
+                                        Text("LeetCoder")
+                                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                                            .foregroundStyle(Color.leetCodeGradient)
+                                        
+                                        // Tech indicator
+                                        Circle()
+                                            .fill(Color.leetCodeGreen)
+                                            .frame(width: 8, height: 8)
+                                            .shadow(color: Color.leetCodeGreen.opacity(0.8), radius: 4, x: 0, y: 0)
+                                    }
                                 }
                                 Spacer()
                             }
-                            .padding(.bottom, 4)
+                            .padding(.bottom, 8)
 
                             // Main progress card
                             progressCard
@@ -129,18 +142,39 @@ struct DashboardView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: 12) {
                         Button(action: { showingCoinInfo = true }) {
-                            Image(systemName: "questionmark.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(Color.leetCodeTextSecondary)
+                            ZStack {
+                                Circle()
+                                    .fill(Color.leetCodeTextSecondary.opacity(0.1))
+                                    .frame(width: 40, height: 40)
+                                
+                                Image(systemName: "questionmark.circle.fill")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundStyle(Color.leetCodeTextSecondary)
+                            }
                         }
+                        .buttonStyle(TechButtonStyle())
 
                         Button(action: { showingAddCoins = true }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(Color.leetCodeOrange)
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.leetCodeOrange, Color.leetCodeOrangeBright],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 40, height: 40)
+                                    .shadow(color: Color.leetCodeOrange.opacity(0.4), radius: 8, x: 0, y: 4)
+                                
+                                Image(systemName: "plus")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
                         }
+                        .buttonStyle(TechButtonStyle())
                     }
                 }
             }
@@ -173,98 +207,186 @@ struct DashboardView: View {
             appearAnimation = true
             dataManager.checkAndResetDailyActivities()
             dataManager.checkAndShowBannersOnAppOpen()
+            
+            // Start continuous shimmer animation
+            withAnimation(
+                Animation.linear(duration: 2.0)
+                    .repeatForever(autoreverses: false)
+            ) {
+                shimmerRotation = 360
+            }
         }
     }
 
     private var progressCard: some View {
-        VStack(spacing: 24) {
-            // Progress ring
+        VStack(spacing: 28) {
+            // Progress ring with loading bar animation
             ZStack {
                 // Background circle
                 Circle()
-                    .stroke(Color.subtleGray, lineWidth: 16)
-                    .frame(width: 200, height: 200)
+                    .stroke(
+                        Color.subtleGray.opacity(0.5),
+                        lineWidth: 22
+                    )
+                    .frame(width: 220, height: 220)
 
-                // Progress circle
+                // Progress circle with subtle orange-yellow (matching Leetcoder gradient)
                 Circle()
                     .trim(from: 0, to: progressPercentage)
                     .stroke(
-                        LinearGradient(
-                            colors: [Color.leetCodeOrange, Color.leetCodeYellow],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                        Color(hex: "F89F1B").opacity(0.75),
+                        style: StrokeStyle(lineWidth: 22, lineCap: .round, lineJoin: .round)
                     )
-                    .frame(width: 200, height: 200)
+                    .frame(width: 220, height: 220)
                     .rotationEffect(.degrees(-90))
                     .animation(.spring(response: 0.8, dampingFraction: 0.7), value: progressPercentage)
-                    .shadow(color: Color.leetCodeOrange.opacity(0.2), radius: 10, x: 0, y: 0)
+                    .shadow(color: Color(hex: "F89F1B").opacity(0.12), radius: 8, x: 0, y: 4)
+                
+                // Loading bar shimmer effect - rotating highlight (subtle)
+                if progressPercentage > 0 {
+                    Circle()
+                        .trim(from: max(0, progressPercentage - 0.1), to: progressPercentage)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.2),
+                                    Color.white.opacity(0.5),
+                                    Color.white.opacity(0.2)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ),
+                            style: StrokeStyle(lineWidth: 22, lineCap: .round)
+                        )
+                        .frame(width: 220, height: 220)
+                        .rotationEffect(.degrees(-90 + shimmerRotation))
+                }
 
-                // Center content
-                VStack(spacing: 6) {
+                // Center content with monospace font
+                VStack(spacing: 10) {
                     Text("\(dataManager.userData.currentCoins)")
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
-                        .foregroundColor(.leetCodeTextPrimary)
+                        .font(.system(size: 52, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.leetCodeGradient.opacity(0.9))
+                        .shadow(color: Color(hex: "F89F1B").opacity(0.12), radius: 4, x: 0, y: 2)
 
                     Text("of \(dataManager.userData.targetCoins)")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .font(.system(size: 15, weight: .medium, design: .monospaced))
                         .foregroundColor(.leetCodeTextSecondary)
+                        .tracking(0.5)
 
                     Text("\(Int(progressPercentage * 100))%")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundColor(.leetCodeOrange)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color.leetCodeOrange.opacity(0.1))
-                        .cornerRadius(12)
+                        .font(.system(size: 16, weight: .bold, design: .monospaced))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule()
+                                .fill(Color(hex: "F89F1B").opacity(0.75))
+                                .shadow(color: Color(hex: "F89F1B").opacity(0.15), radius: 8, x: 0, y: 4)
+                        )
                 }
             }
-            .padding(.top, 8)
+            .padding(.top, 12)
 
-            // Edit buttons
-            HStack(spacing: 12) {
+            // Edit buttons with glassmorphism
+            HStack(spacing: 14) {
                 Button(action: { showingEditCoins = true }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "bitcoinsign.circle.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(.leetCodeOrange)
+                    HStack(spacing: 10) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.leetCodeOrange.opacity(0.15))
+                                .frame(width: 36, height: 36)
+                            
+                            Image(systemName: "bitcoinsign.circle.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(.leetCodeOrange)
+                        }
+                        
                         Text("Edit Current")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundColor(.leetCodeTextPrimary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color.pageBackground)
-                    .cornerRadius(20)
-                    .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color.glassBackground)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .fill(Color.leetCodeOrange.opacity(0.05))
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(Color.glassBorder, lineWidth: 1.5)
+                    )
+                    .shadow(color: Color.leetCodeOrange.opacity(0.1), radius: 8, x: 0, y: 4)
                 }
+                .buttonStyle(TechButtonStyle())
 
                 Button(action: { showingEditTarget = true }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "target")
-                            .font(.system(size: 18))
-                            .foregroundColor(.leetCodeGreen)
+                    HStack(spacing: 10) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.leetCodeGreen.opacity(0.15))
+                                .frame(width: 36, height: 36)
+                            
+                            Image(systemName: "target")
+                                .font(.system(size: 18))
+                                .foregroundColor(.leetCodeGreen)
+                        }
+                        
                         Text("Edit Target")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .font(.system(size: 15, weight: .semibold, design: .rounded))
                             .foregroundColor(.leetCodeTextPrimary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color.pageBackground)
-                    .cornerRadius(20)
-                    .shadow(color: Color.black.opacity(0.03), radius: 5, x: 0, y: 2)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color.glassBackground)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .fill(Color.leetCodeGreen.opacity(0.05))
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(Color.glassBorder, lineWidth: 1.5)
+                    )
+                    .shadow(color: Color.leetCodeGreen.opacity(0.1), radius: 8, x: 0, y: 4)
                 }
+                .buttonStyle(TechButtonStyle())
             }
         }
-        .padding(24)
-        .background(Color.cardBackground)
-        .cornerRadius(32)
-        .shadow(color: Color.black.opacity(0.08), radius: 24, x: 0, y: 12)
+        .padding(28)
+        .background(
+            RoundedRectangle(cornerRadius: 32)
+                .fill(Color.glassBackground)
+                .background(
+                    RoundedRectangle(cornerRadius: 32)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 32)
-                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
         )
+        .shadow(color: Color.black.opacity(0.1), radius: 30, x: 0, y: 15)
+        .shadow(color: Color.leetCodeOrange.opacity(0.1), radius: 20, x: 0, y: 8)
         .sheet(isPresented: $showingEditCoins) {
             EditCoinsView(title: "Edit Current Coins", coins: dataManager.userData.currentCoins) { newValue in
                 dataManager.updateCurrentCoins(newValue)
@@ -280,96 +402,162 @@ struct DashboardView: View {
 
 
     private var estimationCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "clock.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(.leetCodeOrange)
-                Text("Estimated Time")
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(Color.leetCodeOrange.opacity(0.15))
+                        .frame(width: 32, height: 32)
+                    
+                    Image(systemName: "clock.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(.leetCodeOrange)
+                }
+                
+                Text("ESTIMATED TIME")
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
                     .foregroundColor(.leetCodeTextSecondary)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
+                    .tracking(1.5)
             }
 
             if dataManager.userData.estimatedMonthlyCoins > 0 {
                 HStack(spacing: 32) {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("\(String(format: "%.1f", dataManager.userData.monthsToTarget))")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.leetCodeTextPrimary)
+                            .font(.system(size: 36, weight: .bold, design: .monospaced))
+                            .foregroundStyle(Color.leetCodeGradient)
+                            .shadow(color: Color.leetCodeOrange.opacity(0.2), radius: 4, x: 0, y: 2)
                         Text("Months")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.system(size: 13, weight: .medium, design: .monospaced))
                             .foregroundColor(.leetCodeTextSecondary)
+                            .tracking(0.5)
                     }
 
                     Rectangle()
-                        .fill(Color.subtleGray)
-                        .frame(width: 1, height: 50)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.clear, Color.subtleGray, Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .frame(width: 1.5, height: 60)
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("~\(dataManager.userData.daysToTarget)")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.leetCodeTextPrimary)
+                            .font(.system(size: 36, weight: .bold, design: .monospaced))
+                            .foregroundStyle(Color.greenGradient)
+                            .shadow(color: Color.leetCodeGreen.opacity(0.2), radius: 4, x: 0, y: 2)
                         Text("Days")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.system(size: 13, weight: .medium, design: .monospaced))
                             .foregroundColor(.leetCodeTextSecondary)
+                            .tracking(0.5)
                     }
 
                     Spacer()
                 }
 
-                // Progress details
-                VStack(spacing: 8) {
+                // Progress details with glass effect
+                VStack(spacing: 12) {
                     HStack {
                         Text("Remaining")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.system(size: 14, weight: .medium, design: .monospaced))
                             .foregroundColor(.leetCodeTextSecondary)
                         Spacer()
-                        Text("\(max(0, dataManager.userData.targetCoins - dataManager.userData.currentCoins)) coins")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        Text("\(max(0, dataManager.userData.targetCoins - dataManager.userData.currentCoins))")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
                             .foregroundColor(.leetCodeTextPrimary)
+                        Text("coins")
+                            .font(.system(size: 14, weight: .medium, design: .monospaced))
+                            .foregroundColor(.leetCodeTextSecondary)
                     }
+
+                    Divider()
+                        .background(Color.subtleGray.opacity(0.5))
 
                     HStack {
                         Text("Monthly rate")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.system(size: 14, weight: .medium, design: .monospaced))
                             .foregroundColor(.leetCodeTextSecondary)
                         Spacer()
                         Button(action: { showingEditMonthlyRate = true }) {
-                            HStack(spacing: 4) {
-                                Text("\(dataManager.userData.estimatedMonthlyCoins) coins/mo")
-                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            HStack(spacing: 6) {
+                                Text("\(dataManager.userData.estimatedMonthlyCoins)")
+                                    .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                Text("coins/mo")
+                                    .font(.system(size: 14, weight: .medium, design: .monospaced))
                                 Image(systemName: "pencil")
-                                    .font(.system(size: 12))
+                                    .font(.system(size: 12, weight: .semibold))
                             }
                             .foregroundColor(.leetCodeOrange)
                         }
                     }
                 }
-                .padding(16)
-                .background(Color.pageBackground)
-                .cornerRadius(14)
+                .padding(18)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.glassBackground)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.glassBorder, lineWidth: 1)
+                )
             } else {
                 HStack(spacing: 12) {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(.leetCodeTextSecondary)
+                    ZStack {
+                        Circle()
+                            .fill(Color.leetCodeTextSecondary.opacity(0.1))
+                            .frame(width: 36, height: 36)
+                        
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(.leetCodeTextSecondary)
+                    }
 
                     Text("Enable Daily or Weekly Luck in Settings to see estimation")
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundColor(.leetCodeTextSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(16)
+                .padding(18)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.pageBackground)
-                .cornerRadius(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.glassBackground)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.glassBorder, lineWidth: 1)
+                )
             }
         }
-        .padding(20)
-        .background(Color.cardBackground)
-        .cornerRadius(20)
-        .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.glassBackground)
+                .background(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: Color.black.opacity(0.08), radius: 25, x: 0, y: 12)
     }
 }
 
@@ -417,6 +605,15 @@ struct ScaleButtonStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.95 : 1)
             .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+struct TechButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
