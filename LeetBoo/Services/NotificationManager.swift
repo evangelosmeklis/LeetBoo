@@ -33,7 +33,7 @@ class NotificationManager {
         }
         
         if settings.magicNotificationsEnabled {
-            scheduleMagicNotifications(calendar: calendar)
+            scheduleMagicNotifications(calendar: calendar, userData: userData)
         }
     }
 
@@ -92,20 +92,20 @@ class NotificationManager {
         UNUserNotificationCenter.current().add(request)
     }
     
-    private func scheduleMagicNotifications(calendar: Calendar) {
+    private func scheduleMagicNotifications(calendar: Calendar, userData: UserData) {
         scheduleContestReminders(calendar: calendar)
-        scheduleEncouragements(calendar: calendar)
+        scheduleMagicUpdates(calendar: calendar, userData: userData)
     }
     
     private func scheduleContestReminders(calendar: Calendar) {
         let content = UNMutableNotificationContent()
-        content.title = "Contest Time! 🏆"
-        content.body = "The weekly contest is coming up. Get ready to compete!"
+        content.title = "Weekend Contests"
+        content.body = "Weekly contest Saturday, biweekly Sunday — jump in for +5 Leetcoins."
         content.sound = .default
         
         var dateComponents = DateComponents()
         dateComponents.weekday = 7 // Saturday
-        dateComponents.hour = 14 // 2:00 PM (Generic time)
+        dateComponents.hour = 14
         dateComponents.minute = 0
         
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
@@ -114,21 +114,22 @@ class NotificationManager {
         UNUserNotificationCenter.current().add(request)
     }
     
-    private func scheduleEncouragements(calendar: Calendar) {
-        // Schedule a few random encouragements for the upcoming week
-        // Since we can't truly randomize constantly without BG processing,
-        // we'll deterministic-ally pick a few time slots based on the current week.
-        
+    private func scheduleMagicUpdates(calendar: Calendar, userData: UserData) {
+        let monthlyCoins = monthlyCoinsEarned(userData: userData)
+        let target = max(1, userData.targetCoins)
+        let progressPercent = Int((Double(userData.currentCoins) / Double(target) * 100).rounded())
+
         let messages = [
-            "Magic Update 🌟: You are on track for your monthly goals! Keep it up!",
-            "Magic Update 🔥: Consistency is key. You're doing great!",
-            "Magic Update 💎: Don't break the chain. Your future self will thank you!"
+            "You have secured \(monthlyCoins) Leetcoins this month so far.",
+            "You're \(userData.currentCoins)/\(target) coins — \(progressPercent)% toward your goal.",
+            "Tip: First contest submission earns +200 Leetcoins.",
+            "Tip: Connect GitHub or LinkedIn for +10 Leetcoins."
         ]
         
-        // Schedule for Tuesday at 11 AM and Thursday at 4 PM
         let slots: [(weekday: Int, hour: Int, id: String)] = [
-            (3, 11, "magic_encouragement_1"), // Tuesday
-            (5, 16, "magic_encouragement_2")  // Thursday
+            (2, 12, "magic_update_1"),
+            (4, 16, "magic_update_2"),
+            (6, 18, "magic_update_3")
         ]
         
         for (index, slot) in slots.enumerated() {
@@ -140,12 +141,31 @@ class NotificationManager {
             var dateComponents = DateComponents()
             dateComponents.weekday = slot.weekday
             dateComponents.hour = slot.hour
-            dateComponents.minute = 0 // On the hour
+            dateComponents.minute = 0
             
             let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
             let request = UNNotificationRequest(identifier: slot.id, content: content, trigger: trigger)
             
             UNUserNotificationCenter.current().add(request)
+        }
+    }
+
+    private func monthlyCoinsEarned(userData: UserData, date: Date = Date()) -> Int {
+        let calendar = Calendar.current
+        return userData.activityLog.reduce(0) { total, entry in
+            guard calendar.isDate(entry.date, equalTo: date, toGranularity: .month),
+                  calendar.isDate(entry.date, equalTo: date, toGranularity: .year) else {
+                return total
+            }
+
+            switch entry.activityType {
+            case .dailyCheckIn:
+                return total + 1
+            case .dailyProblem:
+                return total + 10
+            case .weeklyLuck:
+                return total + 10
+            }
         }
     }
 

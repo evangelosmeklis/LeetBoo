@@ -85,18 +85,13 @@ struct ProgressView: View {
                                 .padding(.horizontal, 20)
 
                             let missedDates = dataManager.getMissedDates(for: .dailyProblem)
-                            let missedWeekly = dataManager.getMissedWeeklyMissions(for: "weeklyPremium")
 
-                            if missedDates.isEmpty && missedWeekly.isEmpty {
+                            if missedDates.isEmpty {
                                 emptyStateView(message: "You haven't missed any challenges this month! Keep it up!")
                             } else {
                                 LazyVStack(spacing: 12) {
                                     ForEach(missedDates, id: \.self) { date in
                                         missedRow(dateText: date.formatted(date: .long, time: .omitted), subtitle: "Daily Challenge")
-                                    }
-
-                                    ForEach(missedWeekly, id: \.self) { date in
-                                        missedRow(dateText: "Week of \(date.formatted(date: .abbreviated, time: .omitted))", subtitle: "Weekly Premium Challenge")
                                     }
                                 }
                                 .padding(.horizontal, 20)
