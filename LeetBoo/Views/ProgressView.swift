@@ -9,15 +9,26 @@ struct ProgressView: View {
                 Color.pageBackground.ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 28) {
                         // Progress Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Progress")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-                                .padding(.horizontal, 20)
+                        VStack(alignment: .leading, spacing: 18) {
+                            HStack(spacing: 10) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.leetCodeOrange.opacity(0.15))
+                                        .frame(width: 28, height: 28)
+                                    
+                                    Image(systemName: "chart.line.uptrend.xyaxis")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.leetCodeOrange)
+                                }
+                                
+                                Text("PROGRESS")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                                    .tracking(1.5)
+                            }
+                            .padding(.horizontal, 20)
 
                             VStack(spacing: 16) {
                                 let streakTarget = 30
@@ -35,13 +46,24 @@ struct ProgressView: View {
                         }
 
                         // Daily Status Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Today's Missions")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-                                .padding(.horizontal, 20)
+                        VStack(alignment: .leading, spacing: 18) {
+                            HStack(spacing: 10) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.leetCodeGreen.opacity(0.15))
+                                        .frame(width: 28, height: 28)
+                                    
+                                    Image(systemName: "checkmark.seal.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.leetCodeGreen)
+                                }
+                                
+                                Text("TODAY'S MISSIONS")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                                    .tracking(1.5)
+                            }
+                            .padding(.horizontal, 20)
 
                             VStack(spacing: 12) {
                                 let isMonday = Calendar.current.component(.weekday, from: Date()) == 2
@@ -76,13 +98,24 @@ struct ProgressView: View {
                         }
                         
                         // Missed Challenges Section
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Missed Challenges (This Month)")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-                                .padding(.horizontal, 20)
+                        VStack(alignment: .leading, spacing: 18) {
+                            HStack(spacing: 10) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.leetCodeRed.opacity(0.15))
+                                        .frame(width: 28, height: 28)
+                                    
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.leetCodeRed)
+                                }
+                                
+                                Text("MISSED CHALLENGES (THIS MONTH)")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                                    .tracking(1.5)
+                            }
+                            .padding(.horizontal, 20)
 
                             let missedDates = dataManager.getMissedDates(for: .dailyProblem)
 
@@ -110,136 +143,213 @@ struct ProgressView: View {
     private func progressRow(title: String, icon: String, color: Color, current: Int, target: Int, customStatus: String? = nil) -> some View {
         let progress = min(1.0, Double(current) / Double(target))
         
-        return HStack(spacing: 16) {
+        return HStack(spacing: 18) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(0.12))
-                    .frame(width: 48, height: 48)
+                    .fill(color.opacity(0.15))
+                    .frame(width: 52, height: 52)
                 
                 Image(systemName: icon)
-                    .font(.system(size: 24))
+                    .font(.system(size: 24, weight: .semibold))
                     .foregroundColor(color)
             }
             
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
                         .foregroundColor(.leetCodeTextPrimary)
                     
                     Spacer()
                     
                     if let status = customStatus {
                         Text(status)
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .font(.system(size: 15, weight: .bold, design: .monospaced))
                             .foregroundColor(color)
                     } else {
                         Text("\(current)/\(target)")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .font(.system(size: 15, weight: .bold, design: .monospaced))
                             .foregroundColor(color)
                     }
                 }
                 
-                // Progress Bar
+                // Enhanced Progress Bar
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Color.subtleGray)
-                            .frame(height: 8)
+                            .fill(Color.subtleGray.opacity(0.5))
+                            .frame(height: 10)
                         
                         Capsule()
-                            .fill(color)
-                            .frame(width: max(0, geometry.size.width * progress), height: 8)
+                            .fill(
+                                LinearGradient(
+                                    colors: [color, color.opacity(0.7)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: max(0, geometry.size.width * progress), height: 10)
+                            .shadow(color: color.opacity(0.4), radius: 4, x: 0, y: 2)
                     }
                 }
-                .frame(height: 8)
+                .frame(height: 10)
             }
         }
-        .padding(16)
+        .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.cardBackground)
-                .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 4)
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.glassBackground)
+                .background(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
         )
+        .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
     }
 
     private func completionRow(title: String, icon: String, isCompleted: Bool) -> some View {
         HStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill((isCompleted ? Color.leetCodeGreen : Color.subtleGray).opacity(0.12))
-                    .frame(width: 40, height: 40)
+                    .fill((isCompleted ? Color.leetCodeGreen : Color.subtleGray).opacity(0.15))
+                    .frame(width: 44, height: 44)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18))
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(isCompleted ? .leetCodeGreen : .leetCodeTextSecondary)
             }
 
             Text(title)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundColor(.leetCodeTextPrimary)
 
             Spacer()
 
             Text(isCompleted ? "Completed" : "Not yet")
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: 13, weight: .bold, design: .monospaced))
                 .foregroundColor(isCompleted ? .leetCodeGreen : .leetCodeTextSecondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(isCompleted ? Color.leetCodeGreen.opacity(0.1) : Color.subtleGray.opacity(0.3))
+                )
         }
-        .padding(16)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(Color.cardBackground)
-                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.glassBackground)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
         )
+        .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: 6)
     }
 
     private func missedRow(dateText: String, subtitle: String) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(dateText)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundColor(.leetCodeTextPrimary)
                 Text(subtitle)
-                    .font(.system(size: 13, weight: .regular, design: .rounded))
+                    .font(.system(size: 13, weight: .medium, design: .monospaced))
                     .foregroundColor(.leetCodeTextSecondary)
+                    .tracking(0.3)
             }
 
             Spacer()
 
-            Text("Missed")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundColor(.red.opacity(0.8))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(8)
+            Text("MISSED")
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .foregroundColor(.leetCodeRed)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(Color.leetCodeRed.opacity(0.1))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(Color.leetCodeRed.opacity(0.3), lineWidth: 1)
+                )
         }
-        .padding(16)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.cardBackground)
-                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.glassBackground)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
         )
+        .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: 6)
     }
     
     private func emptyStateView(message: String) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "hand.thumbsup.fill")
-                .font(.system(size: 40))
-                .foregroundColor(.leetCodeGreen)
-                .padding(.bottom, 8)
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(Color.leetCodeGreen.opacity(0.15))
+                    .frame(width: 80, height: 80)
+                
+                Image(systemName: "hand.thumbsup.fill")
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundColor(.leetCodeGreen)
+            }
+            .padding(.bottom, 8)
             
             Text(message)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
@@ -248,11 +358,26 @@ struct ProgressView: View {
                 .padding(.horizontal, 40)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
+        .padding(.vertical, 48)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.cardBackground.opacity(0.5))
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.glassBackground)
+                .background(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.8), Color.white.opacity(0.6)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.glassBorder, lineWidth: 1.5)
+        )
+        .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
         .padding(.horizontal, 20)
     }
 }

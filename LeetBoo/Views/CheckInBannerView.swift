@@ -9,63 +9,104 @@ struct CheckInBannerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 14) {
+            HStack(spacing: 16) {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(iconColor.opacity(0.12))
-                        .frame(width: 48, height: 48)
+                        .fill(iconColor.opacity(0.15))
+                        .frame(width: 52, height: 52)
 
                     Image(systemName: iconName)
-                        .font(.system(size: 22))
+                        .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(iconColor)
                 }
 
                 // Text content
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(title)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundColor(.leetCodeTextPrimary)
 
                     Text(subtitle)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 13, weight: .medium, design: .monospaced))
                         .foregroundColor(.leetCodeTextSecondary)
+                        .tracking(0.3)
                 }
 
                 Spacer()
 
-                // Action buttons
-                HStack(spacing: 8) {
+                // Action buttons with modern styling
+                HStack(spacing: 10) {
                     Button(action: onDismiss) {
                         Text("Later")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(.leetCodeTextSecondary)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .background(Color.subtleGray)
-                            .cornerRadius(12)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 11)
+                            .background(
+                                Capsule()
+                                    .fill(Color.glassBackground)
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.glassBorder, lineWidth: 1)
+                            )
                     }
+                    .buttonStyle(TechButtonStyle())
 
                     Button(action: onConfirm) {
-                        Text("+\(coins)")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
-                            .background(iconColor)
-                            .cornerRadius(12)
-                            .shadow(color: iconColor.opacity(0.3), radius: 8, x: 0, y: 4)
+                        HStack(spacing: 6) {
+                            Text("+")
+                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            Text("\(coins)")
+                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 11)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [iconColor, iconColor.opacity(0.8)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                        .shadow(color: iconColor.opacity(0.4), radius: 10, x: 0, y: 5)
                     }
+                    .buttonStyle(TechButtonStyle())
                 }
             }
-            .padding(16)
-            .background(Color.cardBackground)
-            .cornerRadius(20)
-            .shadow(color: Color.black.opacity(0.08), radius: 16, x: 0, y: 8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(iconColor.opacity(0.2), lineWidth: 1)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.glassBackground)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.95), Color.white.opacity(0.85)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(
+                        LinearGradient(
+                            colors: [iconColor.opacity(0.4), iconColor.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2
+                    )
+            )
+            .shadow(color: Color.black.opacity(0.1), radius: 20, x: 0, y: 10)
+            .shadow(color: iconColor.opacity(0.2), radius: 15, x: 0, y: 5)
             .padding(.horizontal, 16)
             .padding(.top, 12)
         }

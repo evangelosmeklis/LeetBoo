@@ -22,49 +22,96 @@ struct EditCoinsView: View {
 
                 VStack(spacing: 20) {
                     // Input field
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Enter New Value")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundColor(.leetCodeTextSecondary)
-                            .textCase(.uppercase)
-                            .tracking(0.5)
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack(spacing: 10) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.leetCodeOrange.opacity(0.15))
+                                    .frame(width: 28, height: 28)
+                                
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.leetCodeOrange)
+                            }
+                            
+                            Text("ENTER NEW VALUE")
+                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .tracking(1.5)
+                        }
 
                         TextField("Coins", text: $inputValue)
                             .keyboardType(.numberPad)
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
-                            .padding(24)
+                            .font(.system(size: 42, weight: .bold, design: .monospaced))
+                            .padding(28)
                             .background(
                                 RoundedRectangle(cornerRadius: 24)
-                                    .fill(Color.cardBackground)
-                                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                                    .fill(Color.glassBackground)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                    )
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 24)
-                                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1.5
+                                    )
                             )
-                            .foregroundColor(.leetCodeTextPrimary)
+                            .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
+                            .shadow(color: Color.leetCodeOrange.opacity(0.1), radius: 15, x: 0, y: 4)
+                            .foregroundStyle(Color.leetCodeGradient)
                     }
 
                     // Current value display
                     HStack {
                         Text("Current Value")
-                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .font(.system(size: 15, weight: .semibold, design: .monospaced))
                             .foregroundColor(.leetCodeTextSecondary)
+                            .tracking(0.3)
                         Spacer()
                         Text("\(coins)")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundColor(.leetCodeTextPrimary)
+                            .font(.system(size: 24, weight: .bold, design: .monospaced))
+                            .foregroundStyle(Color.leetCodeGradient)
                     }
                     .padding(24)
                     .background(
                         RoundedRectangle(cornerRadius: 24)
-                            .fill(Color.cardBackground)
-                            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
+                            .fill(Color.glassBackground)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            )
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1.5
+                            )
                     )
+                    .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
 
                     Spacer()
                 }
