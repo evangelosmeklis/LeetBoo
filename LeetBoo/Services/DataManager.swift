@@ -86,7 +86,6 @@ class DataManager: ObservableObject {
 
         // Add coins
         // (If it's weekly luck, we might want to check week uniqueness, but keeping simple for now)
-        let coins = type == .dailyProblem ? 10 : (type == .dailyCheckIn ? 1 : 0) // Default values for log
         // Note: The actual coin addition often happens in specific methods, but if we use this for time travel,
         // we should add the coins here if they haven't been added.
         // For Time Travel, we call this directly. For daily usage, we might call this alongside confirmCheckIn.
@@ -153,7 +152,6 @@ class DataManager: ObservableObject {
     func getMonthlyCount(for type: ActivityType) -> Int {
         let calendar = Calendar.current
         let now = Date()
-        let components = calendar.dateComponents([.year, .month], from: now)
         
         let logs = userData.activityLog.filter { entry in
             return entry.activityType == type &&
