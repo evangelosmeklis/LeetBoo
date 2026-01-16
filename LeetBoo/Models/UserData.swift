@@ -8,6 +8,7 @@ struct UserData: Codable {
     var dismissedBanners: [String: Date]
     var activityLog: [ActivityLogEntry] = []
     var completedOneTimeMissions: Set<String> = []
+    var completedWeeklyMissions: Set<String> = []
 
     init() {
         self.currentCoins = 0
@@ -18,6 +19,7 @@ struct UserData: Codable {
         self.dismissedBanners = [:]
         self.activityLog = []
         self.completedOneTimeMissions = []
+        self.completedWeeklyMissions = []
     }
 
     enum CodingKeys: String, CodingKey {
@@ -29,6 +31,7 @@ struct UserData: Codable {
         case activityLog
         case customMonthlyRate
         case completedOneTimeMissions
+        case completedWeeklyMissions
     }
 
     init(from decoder: Decoder) throws {
@@ -42,6 +45,8 @@ struct UserData: Codable {
         customMonthlyRate = try container.decodeIfPresent(Int.self, forKey: .customMonthlyRate)
         let missions = try container.decodeIfPresent([String].self, forKey: .completedOneTimeMissions) ?? []
         completedOneTimeMissions = Set(missions)
+        let weeklyMissions = try container.decodeIfPresent([String].self, forKey: .completedWeeklyMissions) ?? []
+        completedWeeklyMissions = Set(weeklyMissions)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -54,6 +59,7 @@ struct UserData: Codable {
         try container.encode(activityLog, forKey: .activityLog)
         try container.encode(customMonthlyRate, forKey: .customMonthlyRate)
         try container.encode(Array(completedOneTimeMissions), forKey: .completedOneTimeMissions)
+        try container.encode(Array(completedWeeklyMissions), forKey: .completedWeeklyMissions)
     }
 
     var enabledActivities: [Activity] {

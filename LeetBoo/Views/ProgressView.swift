@@ -10,55 +10,67 @@ struct ProgressView: View {
                 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
-                        // Monthly Goals Section
+                        // Progress Section
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("This Month's Goals")
+                            Text("Progress")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundColor(.leetCodeTextSecondary)
                                 .textCase(.uppercase)
                                 .tracking(0.5)
                                 .padding(.horizontal, 20)
-                            
+
                             VStack(spacing: 16) {
-                                // Shared variables
-                                let daysInMonth = Calendar.current.range(of: .day, in: .month, for: Date())?.count ?? 30
-                                
-                                // 30 Day Streak
                                 let streakTarget = 30
                                 let currentStreak = dataManager.getCurrentStreak(for: .dailyCheckIn)
-                                let daysRemaining = daysInMonth - Calendar.current.component(.day, from: Date())
-                                let isStreakPossible = (currentStreak + daysRemaining) >= streakTarget
-                                
+
                                 progressRow(
                                     title: "30 Day Streak",
                                     icon: "flame.fill",
-                                    color: (isStreakPossible || currentStreak >= streakTarget) ? .leetCodeOrange : .red,
+                                    color: .leetCodeOrange,
                                     current: currentStreak,
-                                    target: streakTarget,
-                                    customStatus: (isStreakPossible || currentStreak >= streakTarget) ? nil : "Failed"
+                                    target: streakTarget
                                 )
-                                
-                                // Monthly Badge (25 Daily Problems)
-                                progressRow(
-                                    title: "Monthly Badge",
-                                    icon: "star.circle.fill",
-                                    color: .leetCodeYellow,
-                                    current: dataManager.getMonthlyCount(for: .dailyProblem),
-                                    target: 25
-                                )
-                                
-                                // Perfect Month (All Daily Problems)
-                                let missedDailyProblemsCount = dataManager.getMissedDates(for: .dailyProblem).count
-                                let isPerfectMonthPossible = missedDailyProblemsCount == 0
+                            }
+                            .padding(.horizontal, 20)
+                        }
 
-                                progressRow(
-                                    title: "Perfect Month",
-                                    icon: "crown.fill",
-                                    color: isPerfectMonthPossible ? .leetCodeYellow : .red,
-                                    current: isPerfectMonthPossible ? dataManager.getMonthlyCount(for: .dailyProblem) : 0,
-                                    target: daysInMonth,
-                                    customStatus: isPerfectMonthPossible ? nil : "Failed"
+                        // Daily Status Section
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Today's Missions")
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .textCase(.uppercase)
+                                .tracking(0.5)
+                                .padding(.horizontal, 20)
+
+                            VStack(spacing: 12) {
+                                let isMonday = Calendar.current.component(.weekday, from: Date()) == 2
+
+                                completionRow(
+                                    title: "Daily Check-in",
+                                    icon: "checkmark.circle.fill",
+                                    isCompleted: dataManager.isActivityCompletedToday(.dailyCheckIn)
                                 )
+
+                                completionRow(
+                                    title: "Daily Challenge",
+                                    icon: "brain.head.profile.fill",
+                                    isCompleted: dataManager.isActivityCompletedToday(.dailyProblem)
+                                )
+
+                                completionRow(
+                                    title: "Weekly Premium Challenges",
+                                    icon: "star.circle.fill",
+                                    isCompleted: dataManager.isWeeklyMissionCompleted("weeklyPremium")
+                                )
+
+                                if isMonday {
+                                    completionRow(
+                                        title: "Lucky Monday",
+                                        icon: "clover.fill",
+                                        isCompleted: dataManager.isActivityCompletedToday(.weeklyLuck)
+                                    )
+                                }
                             }
                             .padding(.horizontal, 20)
                         }
@@ -71,44 +83,20 @@ struct ProgressView: View {
                                 .textCase(.uppercase)
                                 .tracking(0.5)
                                 .padding(.horizontal, 20)
-                            
+
                             let missedDates = dataManager.getMissedDates(for: .dailyProblem)
-                            
-                            if missedDates.isEmpty {
+                            let missedWeekly = dataManager.getMissedWeeklyMissions(for: "weeklyPremium")
+
+                            if missedDates.isEmpty && missedWeekly.isEmpty {
                                 emptyStateView(message: "You haven't missed any challenges this month! Keep it up!")
                             } else {
                                 LazyVStack(spacing: 12) {
                                     ForEach(missedDates, id: \.self) { date in
-                                        HStack {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text(date.formatted(date: .long, time: .omitted))
-                                                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                                                    .foregroundColor(.leetCodeTextPrimary)
-                                                Text("Daily Problem")
-                                                    .font(.system(size: 13, weight: .regular, design: .rounded))
-                                                    .foregroundColor(.leetCodeTextSecondary)
-                                            }
-                                            
-                                            Spacer()
-                                            
-                                            Text("Missed")
-                                                .font(.system(size: 14, weight: .bold, design: .rounded))
-                                                .foregroundColor(.red.opacity(0.8))
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 4)
-                                                .background(Color.red.opacity(0.1))
-                                                .cornerRadius(8)
-                                        }
-                                        .padding(16)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .fill(Color.cardBackground)
-                                                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-                                        )
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                                        )
+                                        missedRow(dateText: date.formatted(date: .long, time: .omitted), subtitle: "Daily Challenge")
+                                    }
+
+                                    ForEach(missedWeekly, id: \.self) { date in
+                                        missedRow(dateText: "Week of \(date.formatted(date: .abbreviated, time: .omitted))", subtitle: "Weekly Premium Challenge")
                                     }
                                 }
                                 .padding(.horizontal, 20)
@@ -180,6 +168,73 @@ struct ProgressView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+        )
+    }
+
+    private func completionRow(title: String, icon: String, isCompleted: Bool) -> some View {
+        HStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill((isCompleted ? Color.leetCodeGreen : Color.subtleGray).opacity(0.12))
+                    .frame(width: 40, height: 40)
+
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(isCompleted ? .leetCodeGreen : .leetCodeTextSecondary)
+            }
+
+            Text(title)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundColor(.leetCodeTextPrimary)
+
+            Spacer()
+
+            Text(isCompleted ? "Completed" : "Not yet")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundColor(isCompleted ? .leetCodeGreen : .leetCodeTextSecondary)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.cardBackground)
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18)
+                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+        )
+    }
+
+    private func missedRow(dateText: String, subtitle: String) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(dateText)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundColor(.leetCodeTextPrimary)
+                Text(subtitle)
+                    .font(.system(size: 13, weight: .regular, design: .rounded))
+                    .foregroundColor(.leetCodeTextSecondary)
+            }
+
+            Spacer()
+
+            Text("Missed")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundColor(.red.opacity(0.8))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(8)
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.cardBackground)
+                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.white.opacity(0.5), lineWidth: 1)
         )
     }

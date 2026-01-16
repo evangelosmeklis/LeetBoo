@@ -49,6 +49,26 @@ class DataManager: ObservableObject {
         saveData()
     }
 
+    func isActivityCompletedToday(_ type: ActivityType) -> Bool {
+        userData.activities.first(where: { $0.type == type })?.completedToday ?? false
+    }
+
+    func isWeeklyMissionCompleted(_ key: String, date: Date = Date()) -> Bool {
+        userData.completedWeeklyMissions.contains(weeklyMissionKey(key, date: date))
+    }
+
+    func completeWeeklyMission(_ key: String, date: Date = Date()) {
+        userData.completedWeeklyMissions.insert(weeklyMissionKey(key, date: date))
+        saveData()
+    }
+
+    private func weeklyMissionKey(_ key: String, date: Date) -> String {
+        let calendar = Calendar.current
+        let weekOfYear = calendar.component(.weekOfYear, from: date)
+        let year = calendar.component(.yearForWeekOfYear, from: date)
+        return "\(key)-\(year)-\(weekOfYear)"
+    }
+
     // MARK: - Activity Logging & Progress
 
     func logActivity(type: ActivityType, date: Date) {
@@ -177,6 +197,39 @@ class DataManager: ObservableObject {
         }
         
         return missedDates.sorted(by: { $0 > $1 }) // Newest missed first
+    }
+
+    func getMissedWeeklyMissions(for key: String, date: Date = Date()) -> [Date] {
+        let calendar = Calendar.current
+        guard let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: date)),
+              let monthRange = calendar.range(of: .day, in: .month, for: date) else {
+            return []
+        }
+
+        let monthEnd = calendar.date(byAdding: .day, value: monthRange.count, to: monthStart) ?? date
+        let todayStart = calendar.startOfDay(for: date)
+        var missedWeeks: [Date] = []
+        var cursor = monthStart
+
+        while cursor < monthEnd {
+            guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: cursor) else {
+                break
+            }
+
+            let weekStart = weekInterval.start
+            let weekEnd = weekInterval.end
+
+            if weekEnd <= todayStart && weekEnd > monthStart {
+                let weekKey = weeklyMissionKey(key, date: weekStart)
+                if !userData.completedWeeklyMissions.contains(weekKey) {
+                    missedWeeks.append(weekStart)
+                }
+            }
+
+            cursor = weekEnd
+        }
+
+        return missedWeeks.sorted(by: { $0 > $1 })
     }
 
     func updateCustomMonthlyRate(_ rate: Int?) {

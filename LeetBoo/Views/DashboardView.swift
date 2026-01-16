@@ -86,6 +86,12 @@ struct DashboardView: View {
                             // Header
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
+                                    let dayOfMonth = Calendar.current.component(.day, from: Date())
+
+                                    Text("Day \(dayOfMonth)")
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+
                                     Text("Welcome")
                                         .font(.system(size: 14, weight: .medium, design: .rounded))
                                         .foregroundColor(.leetCodeTextSecondary)
@@ -424,11 +430,11 @@ struct AddCoinsSheet: View {
     
     let sections: [CoinSection] = [
         CoinSection(title: "Check-in Missions", options: [
-            CoinOption(title: "Daily Check-in", description: "Log in each day", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen),
+            CoinOption(title: "Daily Check-in", description: "Log in each day", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen, activityType: .dailyCheckIn),
             CoinOption(title: "30 Day Check-in Streak", description: "Check in 30 days straight", coins: 30, icon: "flame.fill", color: .leetCodeOrange),
-            CoinOption(title: "Complete Daily Challenge", description: "Finish the daily challenge", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange),
-            CoinOption(title: "Weekly Premium Challenges", description: "Complete weekly premium challenges", coins: 35, icon: "star.circle.fill", color: .leetCodeYellow),
-            CoinOption(title: "Lucky Monday", description: "Claim on contest page", coins: 10, icon: "clover.fill", color: .leetCodeGreen)
+            CoinOption(title: "Complete Daily Challenge", description: "Finish the daily challenge", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange, activityType: .dailyProblem),
+            CoinOption(title: "Weekly Premium Challenges", description: "Complete weekly premium challenges", coins: 35, icon: "star.circle.fill", color: .leetCodeYellow, weeklyKey: "weeklyPremium"),
+            CoinOption(title: "Lucky Monday", description: "Claim on contest page", coins: 10, icon: "clover.fill", color: .leetCodeGreen, activityType: .weeklyLuck)
         ]),
         CoinSection(title: "Contribution Missions", options: [
             CoinOption(title: "Contribute a Testcase", description: "Submit a new testcase", coins: 100, icon: "doc.text.fill", color: .leetCodeGreen),
@@ -505,18 +511,20 @@ struct AddCoinsSheet: View {
                                     VStack(spacing: 12) {
                                         ForEach(section.options) { option in
                                             let isCompleted = option.oneTimeKey.map { dataManager.isOneTimeMissionCompleted($0) } ?? false
+                                            let isActivityCompleted = option.activityType.map { dataManager.isActivityCompletedToday($0) } ?? false
+                                            let isWeeklyCompleted = option.weeklyKey.map { dataManager.isWeeklyMissionCompleted($0) } ?? false
+                                            let isOptionCompleted = isCompleted || isActivityCompleted || isWeeklyCompleted
 
                                             Button(action: {
-                                                if option.oneTimeKey != nil && isCompleted {
+                                                if isOptionCompleted {
                                                     return
                                                 }
 
-                                                if option.title.contains("Daily Check-in") {
-                                                    dataManager.logActivity(type: .dailyCheckIn, date: Date())
-                                                } else if option.title.contains("Daily Challenge") {
-                                                    dataManager.logActivity(type: .dailyProblem, date: Date())
-                                                } else if option.title.contains("Lucky Monday") {
-                                                    dataManager.confirmCheckIn(for: .weeklyLuck)
+                                                if let activityType = option.activityType {
+                                                    dataManager.confirmCheckIn(for: activityType)
+                                                } else if let weeklyKey = option.weeklyKey {
+                                                    dataManager.addCoins(option.coins)
+                                                    dataManager.completeWeeklyMission(weeklyKey)
                                                 } else {
                                                     dataManager.addCoins(option.coins)
                                                 }
@@ -551,7 +559,7 @@ struct AddCoinsSheet: View {
 
                                                     Spacer()
 
-                                                    if isCompleted {
+                                                    if isOptionCompleted {
                                                         Text("Completed")
                                                             .font(.system(size: 14, weight: .bold, design: .rounded))
                                                             .foregroundColor(.leetCodeGreen)
@@ -572,8 +580,8 @@ struct AddCoinsSheet: View {
                                                         .stroke(Color.white.opacity(0.5), lineWidth: 1)
                                                 )
                                             }
-                                            .disabled(isCompleted)
-                                            .opacity(isCompleted ? 0.6 : 1)
+                                            .disabled(isOptionCompleted)
+                                            .opacity(isOptionCompleted ? 0.6 : 1)
                                             .buttonStyle(ScaleButtonStyle())
                                         }
                                     }
@@ -712,14 +720,27 @@ struct CoinOption: Identifiable {
     let icon: String
     let color: Color
     let oneTimeKey: String?
+    let activityType: ActivityType?
+    let weeklyKey: String?
 
-    init(title: String, description: String, coins: Int, icon: String, color: Color, oneTimeKey: String? = nil) {
+    init(
+        title: String,
+        description: String,
+        coins: Int,
+        icon: String,
+        color: Color,
+        oneTimeKey: String? = nil,
+        activityType: ActivityType? = nil,
+        weeklyKey: String? = nil
+    ) {
         self.title = title
         self.description = description
         self.coins = coins
         self.icon = icon
         self.color = color
         self.oneTimeKey = oneTimeKey
+        self.activityType = activityType
+        self.weeklyKey = weeklyKey
     }
 }
 
