@@ -3,132 +3,273 @@ import SwiftUI
 struct ProgressView: View {
     @EnvironmentObject var dataManager: DataManager
     
+    var overallProgress: Double {
+        min(1.0, Double(dataManager.userData.currentCoins) / Double(max(1, dataManager.userData.targetCoins)))
+    }
+    
+    var weeklyProgress: Double {
+        let calendar = Calendar.current
+        let today = Date()
+        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) ?? today
+        
+        var completedCount = 0
+        var totalCount = 0
+        
+        // Count daily check-ins this week
+        if let dailyCheckIn = dataManager.userData.activities.first(where: { $0.type == .dailyCheckIn }), dailyCheckIn.isEnabled {
+            totalCount += 7
+            let weekLogs = dataManager.userData.activityLog.filter { entry in
+                entry.activityType == .dailyCheckIn &&
+                entry.date >= weekStart &&
+                entry.date <= today
+            }
+            completedCount += Set(weekLogs.map { calendar.startOfDay(for: $0.date) }).count
+        }
+        
+        // Count daily problems this week
+        if let dailyProblem = dataManager.userData.activities.first(where: { $0.type == .dailyProblem }), dailyProblem.isEnabled {
+            totalCount += 7
+            let weekLogs = dataManager.userData.activityLog.filter { entry in
+                entry.activityType == .dailyProblem &&
+                entry.date >= weekStart &&
+                entry.date <= today
+            }
+            completedCount += Set(weekLogs.map { calendar.startOfDay(for: $0.date) }).count
+        }
+        
+        // Count weekly luck (if Monday)
+        if Calendar.current.component(.weekday, from: today) == 2 {
+            if let weeklyLuck = dataManager.userData.activities.first(where: { $0.type == .weeklyLuck }), weeklyLuck.isEnabled {
+                totalCount += 1
+                if weeklyLuck.completedToday {
+                    completedCount += 1
+                }
+            }
+        }
+        
+        guard totalCount > 0 else { return 0 }
+        return Double(completedCount) / Double(totalCount)
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
+                // Dark background
                 Color.pageBackground.ignoresSafeArea()
                 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 28) {
-                        // Progress Section
-                        VStack(alignment: .leading, spacing: 18) {
-                            HStack(spacing: 10) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.leetCodeOrange.opacity(0.15))
-                                        .frame(width: 28, height: 28)
-                                    
-                                    Image(systemName: "chart.line.uptrend.xyaxis")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(.leetCodeOrange)
-                                }
-                                
-                                Text("PROGRESS")
-                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.leetCodeTextSecondary)
-                                    .tracking(1.5)
-                            }
-                            .padding(.horizontal, 20)
-
-                            VStack(spacing: 16) {
-                                let streakTarget = 30
-                                let currentStreak = dataManager.getCurrentStreak(for: .dailyCheckIn)
-
-                                progressRow(
-                                    title: "30 Day Streak",
-                                    icon: "flame.fill",
-                                    color: .leetCodeOrange,
-                                    current: currentStreak,
-                                    target: streakTarget
-                                )
-                            }
-                            .padding(.horizontal, 20)
+                    VStack(spacing: 24) {
+                        // Header Section
+                        VStack(spacing: 8) {
+                            Text("Turn coding habits")
+                                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                                .foregroundColor(.leetCodeTextPrimary)
+                            
+                            Text("into attainable goals")
+                                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                                .foregroundColor(.leetCodeTextPrimary)
                         }
-
-                        // Daily Status Section
-                        VStack(alignment: .leading, spacing: 18) {
-                            HStack(spacing: 10) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.leetCodeGreen.opacity(0.15))
-                                        .frame(width: 28, height: 28)
+                        .padding(.top, 20)
+                        
+                        // Main Progress Card
+                        VStack(spacing: 0) {
+                            // Card Header
+                            HStack {
+                                Spacer()
+                                
+                                Text("MY WEEK IN REVIEW")
+                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                    .tracking(1.5)
+                                
+                                Spacer()
+                            }
+                            .padding(.top, 20)
+                            .padding(.bottom, 24)
+                            
+                            // Illustration/Icon area
+                            ZStack {
+                                // Target/dartboard visualization
+                                Circle()
+                                    .fill(Color.subtleGray.opacity(0.2))
+                                    .frame(width: 120, height: 120)
+                                
+                                Circle()
+                                    .fill(Color.subtleGray.opacity(0.3))
+                                    .frame(width: 80, height: 80)
+                                
+                                Circle()
+                                    .fill(Color.subtleGray.opacity(0.4))
+                                    .frame(width: 40, height: 40)
+                                
+                                // Dart arrows
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.leetCodeGreen)
+                                    .offset(x: 30, y: -20)
+                                
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.leetCodeGreen.opacity(0.7))
+                                    .offset(x: 40, y: 0)
+                            }
+                            .padding(.bottom, 24)
+                            
+                            // Motivational Text
+                            VStack(spacing: 8) {
+                                Text("Keep a good thing going")
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                
+                                Text("Science says that effort compounds over time.")
+                                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                                
+                                Text("You're living proof. Don't stop now!")
+                                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                            }
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 24)
+                            
+                            // Weekly Progress Bar
+                            VStack(spacing: 10) {
+                                HStack {
+                                    Text("\(Int(weeklyProgress * 100))%")
+                                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeTextSecondary)
                                     
-                                    Image(systemName: "checkmark.seal.fill")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(.leetCodeGreen)
+                                    Text("COMPLETE")
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .tracking(1)
+                                    
+                                    Spacer()
                                 }
                                 
-                                Text("TODAY'S MISSIONS")
-                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.leetCodeTextSecondary)
-                                    .tracking(1.5)
+                                GeometryReader { geometry in
+                                    ZStack(alignment: .leading) {
+                                        Capsule()
+                                            .fill(Color.subtleGray.opacity(0.3))
+                                            .frame(height: 8)
+                                        
+                                        Capsule()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color.leetCodeGreen, Color.leetCodeGreenBright],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                            .frame(width: max(0, geometry.size.width * weeklyProgress), height: 8)
+                                    }
+                                }
+                                .frame(height: 8)
                             }
-                            .padding(.horizontal, 20)
-
-                            VStack(spacing: 12) {
-                                let isMonday = Calendar.current.component(.weekday, from: Date()) == 2
-
-                                completionRow(
+                            .padding(.horizontal, 24)
+                            .padding(.bottom, 24)
+                            
+                            Divider()
+                                .background(Color.subtleGray.opacity(0.5))
+                            
+                            // Habits List
+                            VStack(spacing: 0) {
+                                // Daily Check-in
+                                habitRow(
                                     title: "Daily Check-in",
-                                    icon: "checkmark.circle.fill",
-                                    isCompleted: dataManager.isActivityCompletedToday(.dailyCheckIn)
+                                    current: getWeeklyCount(for: .dailyCheckIn),
+                                    target: 7,
+                                    color: .leetCodeGreen,
+                                    isEnabled: dataManager.userData.activities.first(where: { $0.type == .dailyCheckIn })?.isEnabled ?? false
                                 )
-
-                                completionRow(
+                                
+                                Divider()
+                                    .background(Color.subtleGray.opacity(0.5))
+                                    .padding(.horizontal, 20)
+                                
+                                // Daily Problem
+                                habitRow(
                                     title: "Daily Challenge",
-                                    icon: "brain.head.profile.fill",
-                                    isCompleted: dataManager.isActivityCompletedToday(.dailyProblem)
+                                    current: getWeeklyCount(for: .dailyProblem),
+                                    target: 7,
+                                    color: .leetCodeGreen,
+                                    isEnabled: dataManager.userData.activities.first(where: { $0.type == .dailyProblem })?.isEnabled ?? false
                                 )
-
-                                completionRow(
-                                    title: "Weekly Premium Challenges",
-                                    icon: "star.circle.fill",
-                                    isCompleted: dataManager.isWeeklyMissionCompleted("weeklyPremium")
+                                
+                                Divider()
+                                    .background(Color.subtleGray.opacity(0.5))
+                                    .padding(.horizontal, 20)
+                                
+                                // Weekly Premium Challenges
+                                habitRow(
+                                    title: "Weekly Premium",
+                                    current: dataManager.isWeeklyMissionCompleted("weeklyPremium") ? 1 : 0,
+                                    target: 1,
+                                    color: .leetCodeGreen,
+                                    isEnabled: true
                                 )
-
-                                if isMonday {
-                                    completionRow(
+                                
+                                // Weekly Luck (only show if Monday)
+                                if Calendar.current.component(.weekday, from: Date()) == 2 {
+                                    Divider()
+                                        .background(Color.subtleGray.opacity(0.5))
+                                        .padding(.horizontal, 20)
+                                    
+                                    habitRow(
                                         title: "Lucky Monday",
-                                        icon: "clover.fill",
-                                        isCompleted: dataManager.isActivityCompletedToday(.weeklyLuck)
+                                        current: dataManager.isActivityCompletedToday(.weeklyLuck) ? 1 : 0,
+                                        target: 1,
+                                        color: .leetCodeGreen,
+                                        isEnabled: dataManager.userData.activities.first(where: { $0.type == .weeklyLuck })?.isEnabled ?? false
                                     )
                                 }
                             }
-                            .padding(.horizontal, 20)
                         }
+                        .background(
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(Color.cardBackground)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                )
+                        )
+                        .padding(.horizontal, 20)
                         
-                        // Missed Challenges Section
-                        VStack(alignment: .leading, spacing: 18) {
-                            HStack(spacing: 10) {
-                                ZStack {
-                                    Circle()
-                                        .fill(Color.leetCodeRed.opacity(0.15))
-                                        .frame(width: 28, height: 28)
-                                    
-                                    Image(systemName: "exclamationmark.triangle.fill")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(.leetCodeRed)
-                                }
-                                
-                                Text("MISSED CHALLENGES (THIS MONTH)")
-                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.leetCodeTextSecondary)
-                                    .tracking(1.5)
-                            }
-                            .padding(.horizontal, 20)
-
-                            let missedDates = dataManager.getMissedDates(for: .dailyProblem)
-
-                            if missedDates.isEmpty {
-                                emptyStateView(message: "You haven't missed any challenges this month! Keep it up!")
-                            } else {
-                                LazyVStack(spacing: 12) {
-                                    ForEach(missedDates, id: \.self) { date in
-                                        missedRow(dateText: date.formatted(date: .long, time: .omitted), subtitle: "Daily Challenge")
-                                    }
-                                }
+                        // Streak Section
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("CURRENT STREAKS")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .tracking(1.5)
                                 .padding(.horizontal, 20)
+                            
+                            VStack(spacing: 0) {
+                                streakRow(
+                                    title: "Daily Check-in Streak",
+                                    streak: dataManager.getCurrentStreak(for: .dailyCheckIn),
+                                    color: .leetCodeOrange
+                                )
+                                
+                                Divider()
+                                    .background(Color.subtleGray.opacity(0.5))
+                                    .padding(.horizontal, 20)
+                                
+                                streakRow(
+                                    title: "Daily Challenge Streak",
+                                    streak: dataManager.getCurrentStreak(for: .dailyProblem),
+                                    color: .leetCodeOrange
+                                )
                             }
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.cardBackground)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                    )
+                            )
+                            .padding(.horizontal, 20)
                         }
                         
                         Spacer(minLength: 40)
@@ -137,247 +278,106 @@ struct ProgressView: View {
                 }
             }
             .navigationTitle("Progress")
+            .navigationBarTitleDisplayMode(.inline)
         }
+        .preferredColorScheme(.dark)
     }
     
-    private func progressRow(title: String, icon: String, color: Color, current: Int, target: Int, customStatus: String? = nil) -> some View {
-        let progress = min(1.0, Double(current) / Double(target))
+    private func getWeeklyCount(for type: ActivityType) -> Int {
+        let calendar = Calendar.current
+        let today = Date()
+        guard let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else {
+            return 0
+        }
         
-        return HStack(spacing: 18) {
+        let weekLogs = dataManager.userData.activityLog.filter { entry in
+            entry.activityType == type &&
+            entry.date >= weekStart &&
+            entry.date <= today
+        }
+        
+        return Set(weekLogs.map { calendar.startOfDay(for: $0.date) }).count
+    }
+    
+    private func habitRow(title: String, current: Int, target: Int, color: Color, isEnabled: Bool) -> some View {
+        let isComplete = current >= target
+        
+        return HStack(spacing: 14) {
+            // Title
+            Text(title)
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundColor(isEnabled ? .leetCodeTextPrimary : .leetCodeTextSecondary.opacity(0.6))
+            
+            Spacer()
+            
+            // Circular progress indicator
+            ZStack {
+                Circle()
+                    .stroke(Color.subtleGray.opacity(0.3), lineWidth: 3)
+                    .frame(width: 44, height: 44)
+                
+                Circle()
+                    .trim(from: 0, to: min(1.0, Double(current) / Double(max(1, target))))
+                    .stroke(
+                        isComplete ? color : color.opacity(0.6),
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    )
+                    .frame(width: 44, height: 44)
+                    .rotationEffect(.degrees(-90))
+                
+                Text("\(current)/\(target)")
+                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                    .foregroundColor(isComplete ? color : .leetCodeTextSecondary)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+    }
+    
+    private func streakRow(title: String, streak: Int, color: Color) -> some View {
+        return HStack(spacing: 14) {
+            // Icon
             ZStack {
                 Circle()
                     .fill(color.opacity(0.15))
-                    .frame(width: 52, height: 52)
+                    .frame(width: 40, height: 40)
                 
-                Image(systemName: icon)
-                    .font(.system(size: 24, weight: .semibold))
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(color)
             }
             
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text(title)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundColor(.leetCodeTextPrimary)
-                    
-                    Spacer()
-                    
-                    if let status = customStatus {
-                        Text(status)
-                            .font(.system(size: 15, weight: .bold, design: .monospaced))
-                            .foregroundColor(color)
-                    } else {
-                        Text("\(current)/\(target)")
-                            .font(.system(size: 15, weight: .bold, design: .monospaced))
-                            .foregroundColor(color)
-                    }
-                }
-                
-                // Enhanced Progress Bar
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.subtleGray.opacity(0.5))
-                            .frame(height: 10)
-                        
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [color, color.opacity(0.7)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(width: max(0, geometry.size.width * progress), height: 10)
-                            .shadow(color: color.opacity(0.4), radius: 4, x: 0, y: 2)
-                    }
-                }
-                .frame(height: 10)
-            }
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.glassBackground)
-                .background(
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
-        )
-        .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
-    }
-
-    private func completionRow(title: String, icon: String, isCompleted: Bool) -> some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill((isCompleted ? Color.leetCodeGreen : Color.subtleGray).opacity(0.15))
-                    .frame(width: 44, height: 44)
-
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(isCompleted ? .leetCodeGreen : .leetCodeTextSecondary)
-            }
-
-            Text(title)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundColor(.leetCodeTextPrimary)
-
-            Spacer()
-
-            Text(isCompleted ? "Completed" : "Not yet")
-                .font(.system(size: 13, weight: .bold, design: .monospaced))
-                .foregroundColor(isCompleted ? .leetCodeGreen : .leetCodeTextSecondary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    Capsule()
-                        .fill(isCompleted ? Color.leetCodeGreen.opacity(0.1) : Color.subtleGray.opacity(0.3))
-                )
-        }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.glassBackground)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
-        )
-        .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: 6)
-    }
-
-    private func missedRow(dateText: String, subtitle: String) -> some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(dateText)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+            // Title
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundColor(.leetCodeTextPrimary)
-                Text(subtitle)
-                    .font(.system(size: 13, weight: .medium, design: .monospaced))
-                    .foregroundColor(.leetCodeTextSecondary)
-                    .tracking(0.3)
-            }
-
-            Spacer()
-
-            Text("MISSED")
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(.leetCodeRed)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
-                .background(
-                    Capsule()
-                        .fill(Color.leetCodeRed.opacity(0.1))
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(Color.leetCodeRed.opacity(0.3), lineWidth: 1)
-                )
-        }
-        .padding(18)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.glassBackground)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
-        )
-        .shadow(color: Color.black.opacity(0.06), radius: 15, x: 0, y: 6)
-    }
-    
-    private func emptyStateView(message: String) -> some View {
-        VStack(spacing: 20) {
-            ZStack {
-                Circle()
-                    .fill(Color.leetCodeGreen.opacity(0.15))
-                    .frame(width: 80, height: 80)
                 
-                Image(systemName: "hand.thumbsup.fill")
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundColor(.leetCodeGreen)
+                Text("\(streak) days")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(.leetCodeTextSecondary)
             }
-            .padding(.bottom, 8)
             
-            Text(message)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(.leetCodeTextSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+            Spacer()
+            
+            // Streak Badge
+            HStack(spacing: 4) {
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(color)
+                
+                Text("\(streak)")
+                    .font(.system(size: 18, weight: .bold, design: .monospaced))
+                    .foregroundColor(color)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(color.opacity(0.1))
+            )
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 48)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.glassBackground)
-                .background(
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.8), Color.white.opacity(0.6)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.glassBorder, lineWidth: 1.5)
-        )
-        .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
         .padding(.horizontal, 20)
+        .padding(.vertical, 14)
     }
 }

@@ -11,7 +11,6 @@ struct DashboardView: View {
 
     // Animation states
     @State private var appearAnimation = false
-    @State private var shimmerRotation: Double = 0
 
     var progressPercentage: Double {
         min(1.0, Double(dataManager.userData.currentCoins) / Double(max(1, dataManager.userData.targetCoins)))
@@ -20,7 +19,7 @@ struct DashboardView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Clean light background
+                // Dark background
                 Color.pageBackground
                     .ignoresSafeArea()
 
@@ -82,54 +81,330 @@ struct DashboardView: View {
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
-                            // Header with tech aesthetic
-                            HStack {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    let dayOfMonth = Calendar.current.component(.day, from: Date())
+                            // Header Section
+                            VStack(spacing: 8) {
+                                Text("Understand your")
+                                    .font(.system(size: 28, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                
+                                Text("Progress")
+                                    .font(.system(size: 28, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                            }
+                            .padding(.top, 20)
 
-                                    HStack(spacing: 8) {
-                                        Text("DAY")
-                                            .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                            .foregroundColor(.leetCodeTextSecondary)
-                                            .tracking(2)
-                                        Text("\(dayOfMonth)")
-                                            .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                            .foregroundColor(.leetCodeOrange)
+                            // Main Progress Card
+                            VStack(spacing: 0) {
+                                // Card Header
+                                HStack {
+                                    Button(action: {}) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(.leetCodeTextPrimary)
                                     }
-
-                                    Text("Welcome back,")
-                                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                                        .foregroundColor(.leetCodeTextSecondary)
+                                    .opacity(0) // Hidden for now
                                     
-                                    HStack(spacing: 8) {
-                                        Text("LeetCoder")
-                                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                                            .foregroundStyle(Color.leetCodeGradient)
-                                        
-                                        // Tech indicator
-                                        Circle()
-                                            .fill(Color.leetCodeGreen)
-                                            .frame(width: 8, height: 8)
-                                            .shadow(color: Color.leetCodeGreen.opacity(0.8), radius: 4, x: 0, y: 0)
+                                    Spacer()
+                                    
+                                    Text("TODAY")
+                                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeTextPrimary)
+                                        .tracking(1.5)
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: { showingCoinInfo = true }) {
+                                        ZStack {
+                                            Circle()
+                                                .stroke(Color.subtleGray, lineWidth: 1.5)
+                                                .frame(width: 28, height: 28)
+                                            
+                                            Text("i")
+                                                .font(.system(size: 14, weight: .semibold, design: .serif))
+                                                .italic()
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                        }
                                     }
                                 }
-                                Spacer()
+                                .padding(.horizontal, 20)
+                                .padding(.top, 20)
+                                .padding(.bottom, 16)
+                                
+                                // Large Circular Progress Indicator
+                                ZStack {
+                                    // Background track
+                                    Circle()
+                                        .stroke(
+                                            Color.subtleGray.opacity(0.3),
+                                            lineWidth: 16
+                                        )
+                                        .frame(width: 200, height: 200)
+                                    
+                                    // Gray segment at top (small gap)
+                                    Circle()
+                                        .trim(from: 0.92, to: 1.0)
+                                        .stroke(
+                                            Color.subtleGray.opacity(0.5),
+                                            style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                                        )
+                                        .frame(width: 200, height: 200)
+                                        .rotationEffect(.degrees(-90))
+                                    
+                                    // Progress circle
+                                    Circle()
+                                        .trim(from: 0, to: min(progressPercentage, 0.92))
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [Color.leetCodeGreen, Color.leetCodeGreenBright],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            ),
+                                            style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                                        )
+                                        .frame(width: 200, height: 200)
+                                        .rotationEffect(.degrees(-90))
+                                        .animation(.spring(response: 0.8, dampingFraction: 0.7), value: progressPercentage)
+                                    
+                                    // Center content
+                                    VStack(spacing: 4) {
+                                        Text("LEETBOO")
+                                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                            .foregroundColor(.leetCodeTextSecondary)
+                                            .tracking(2)
+                                        
+                                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                                            Text("\(dataManager.userData.currentCoins)")
+                                                .font(.system(size: 52, weight: .bold, design: .rounded))
+                                                .foregroundColor(.leetCodeTextPrimary)
+                                        }
+                                        
+                                        Text("COINS")
+                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.leetCodeGreen)
+                                            .tracking(1.5)
+                                    }
+                                }
+                                .padding(.vertical, 20)
+                                
+                                // Stats rows
+                                VStack(spacing: 0) {
+                                    Divider()
+                                        .background(Color.subtleGray.opacity(0.5))
+                                    
+                                    // Target row
+                                    HStack {
+                                        HStack(spacing: 10) {
+                                            Image(systemName: "target")
+                                                .font(.system(size: 16))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                            
+                                            Text("TARGET")
+                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(1)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        HStack(spacing: 6) {
+                                            Text("\(dataManager.userData.targetCoins)")
+                                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                                .foregroundColor(.leetCodeGreen)
+                                            
+                                            Image(systemName: "chevron.up")
+                                                .font(.system(size: 10, weight: .bold))
+                                                .foregroundColor(.leetCodeGreen)
+                                        }
+                                    }
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 14)
+                                    
+                                    Divider()
+                                        .background(Color.subtleGray.opacity(0.5))
+                                    
+                                    // Progress row
+                                    HStack {
+                                        HStack(spacing: 10) {
+                                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                                .font(.system(size: 16))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                            
+                                            Text("PROGRESS")
+                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(1)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        Text("\(Int(progressPercentage * 100))%")
+                                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.leetCodeGreen)
+                                    }
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 14)
+                                    
+                                    Divider()
+                                        .background(Color.subtleGray.opacity(0.5))
+                                    
+                                    // Remaining row
+                                    HStack {
+                                        HStack(spacing: 10) {
+                                            Image(systemName: "hourglass")
+                                                .font(.system(size: 16))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                            
+                                            Text("REMAINING")
+                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                                .tracking(1)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        Text("\(max(0, dataManager.userData.targetCoins - dataManager.userData.currentCoins))")
+                                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.leetCodeTextSecondary)
+                                    }
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 14)
+                                }
+                                
+                                // Today vs goal indicator
+                                HStack(spacing: 8) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "triangle.fill")
+                                            .font(.system(size: 8))
+                                            .foregroundColor(.leetCodeGreen)
+                                        Image(systemName: "triangle.fill")
+                                            .font(.system(size: 8))
+                                            .foregroundColor(.leetCodeOrange)
+                                            .rotationEffect(.degrees(180))
+                                    }
+                                    
+                                    Text("Today vs. goal")
+                                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                }
+                                .padding(.vertical, 12)
+                                
+                                // Summary message
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(getSummaryMessage())
+                                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .lineSpacing(4)
+                                    
+                                    Button(action: { showingCoinInfo = true }) {
+                                        HStack(spacing: 6) {
+                                            Text("EXPLORE MY PROGRESS")
+                                                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                                .tracking(0.5)
+                                            
+                                            Image(systemName: "arrow.right")
+                                                .font(.system(size: 12, weight: .bold))
+                                        }
+                                        .foregroundColor(.leetCodeGreen)
+                                    }
+                                    .padding(.top, 4)
+                                }
+                                .padding(16)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.leetCodeGreen.opacity(0.3), lineWidth: 1)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.leetCodeGreen.opacity(0.05))
+                                        )
+                                )
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 20)
                             }
-                            .padding(.bottom, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .fill(Color.cardBackground)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 24)
+                                            .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                    )
+                            )
+                            .padding(.horizontal, 20)
+                            .offset(y: appearAnimation ? 0 : 30)
+                            .opacity(appearAnimation ? 1 : 0)
+                            .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: appearAnimation)
 
-                            // Main progress card
-                            progressCard
-                                .offset(y: appearAnimation ? 0 : 30)
-                                .opacity(appearAnimation ? 1 : 0)
-                                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: appearAnimation)
+                            // Quick Actions
+                            HStack(spacing: 12) {
+                                Button(action: { showingEditCoins = true }) {
+                                    VStack(spacing: 10) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color.leetCodeOrange.opacity(0.15))
+                                                .frame(width: 44, height: 44)
+                                            
+                                            Image(systemName: "pencil")
+                                                .font(.system(size: 18, weight: .semibold))
+                                                .foregroundColor(.leetCodeOrange)
+                                        }
+                                        
+                                        Text("Edit Current")
+                                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                            .foregroundColor(.leetCodeTextPrimary)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.cardBackground)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                                .buttonStyle(TechButtonStyle())
+                                
+                                Button(action: { showingEditTarget = true }) {
+                                    VStack(spacing: 10) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color.leetCodeGreen.opacity(0.15))
+                                                .frame(width: 44, height: 44)
+                                            
+                                            Image(systemName: "target")
+                                                .font(.system(size: 18, weight: .semibold))
+                                                .foregroundColor(.leetCodeGreen)
+                                        }
+                                        
+                                        Text("Edit Target")
+                                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                            .foregroundColor(.leetCodeTextPrimary)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.cardBackground)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                                .buttonStyle(TechButtonStyle())
+                            }
+                            .padding(.horizontal, 20)
+                            .offset(y: appearAnimation ? 0 : 30)
+                            .opacity(appearAnimation ? 1 : 0)
+                            .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.2), value: appearAnimation)
 
-                            // Estimation card
+                            // Estimation Card
                             estimationCard
                                 .offset(y: appearAnimation ? 0 : 30)
                                 .opacity(appearAnimation ? 1 : 0)
                                 .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.3), value: appearAnimation)
                         }
-                        .padding(.horizontal, 20)
                         .padding(.top, 12)
                         .padding(.bottom, 32)
                     }
@@ -146,12 +421,13 @@ struct DashboardView: View {
                         Button(action: { showingCoinInfo = true }) {
                             ZStack {
                                 Circle()
-                                    .fill(Color.leetCodeTextSecondary.opacity(0.1))
+                                    .stroke(Color.subtleGray, lineWidth: 1.5)
                                     .frame(width: 40, height: 40)
                                 
-                                Image(systemName: "questionmark.circle.fill")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundStyle(Color.leetCodeTextSecondary)
+                                Text("i")
+                                    .font(.system(size: 18, weight: .semibold, design: .serif))
+                                    .italic()
+                                    .foregroundColor(.leetCodeTextSecondary)
                             }
                         }
                         .buttonStyle(TechButtonStyle())
@@ -159,19 +435,12 @@ struct DashboardView: View {
                         Button(action: { showingAddCoins = true }) {
                             ZStack {
                                 Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.leetCodeOrange, Color.leetCodeOrangeBright],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
+                                    .fill(Color.leetCodeGreen)
                                     .frame(width: 40, height: 40)
-                                    .shadow(color: Color.leetCodeOrange.opacity(0.4), radius: 8, x: 0, y: 4)
                                 
                                 Image(systemName: "plus")
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundStyle(.white)
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundStyle(.black)
                             }
                         }
                         .buttonStyle(TechButtonStyle())
@@ -188,7 +457,7 @@ struct DashboardView: View {
                 CoinInfoView()
             }
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(.dark)
         .overlay(
             FireworksView(isActive: showFireworks)
                 .allowsHitTesting(false)
@@ -207,249 +476,74 @@ struct DashboardView: View {
             appearAnimation = true
             dataManager.checkAndResetDailyActivities()
             dataManager.checkAndShowBannersOnAppOpen()
-            
-            // Start continuous shimmer animation
-            withAnimation(
-                Animation.linear(duration: 2.0)
-                    .repeatForever(autoreverses: false)
-            ) {
-                shimmerRotation = 360
-            }
         }
     }
-
-    private var progressCard: some View {
-        VStack(spacing: 28) {
-            // Progress ring with loading bar animation
-            ZStack {
-                // Background circle
-                Circle()
-                    .stroke(
-                        Color.subtleGray.opacity(0.5),
-                        lineWidth: 22
-                    )
-                    .frame(width: 220, height: 220)
-
-                // Progress circle with subtle orange-yellow (matching Leetcoder gradient)
-                Circle()
-                    .trim(from: 0, to: progressPercentage)
-                    .stroke(
-                        Color(hex: "F89F1B").opacity(0.75),
-                        style: StrokeStyle(lineWidth: 22, lineCap: .round, lineJoin: .round)
-                    )
-                    .frame(width: 220, height: 220)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.spring(response: 0.8, dampingFraction: 0.7), value: progressPercentage)
-                    .shadow(color: Color(hex: "F89F1B").opacity(0.12), radius: 8, x: 0, y: 4)
-                
-                // Loading bar shimmer effect - rotating highlight (subtle)
-                if progressPercentage > 0 {
-                    Circle()
-                        .trim(from: max(0, progressPercentage - 0.1), to: progressPercentage)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.2),
-                                    Color.white.opacity(0.5),
-                                    Color.white.opacity(0.2)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ),
-                            style: StrokeStyle(lineWidth: 22, lineCap: .round)
-                        )
-                        .frame(width: 220, height: 220)
-                        .rotationEffect(.degrees(-90 + shimmerRotation))
-                }
-
-                // Center content with monospace font
-                VStack(spacing: 10) {
-                    Text("\(dataManager.userData.currentCoins)")
-                        .font(.system(size: 52, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.leetCodeGradient.opacity(0.9))
-                        .shadow(color: Color(hex: "F89F1B").opacity(0.12), radius: 4, x: 0, y: 2)
-
-                    Text("of \(dataManager.userData.targetCoins)")
-                        .font(.system(size: 15, weight: .medium, design: .monospaced))
-                        .foregroundColor(.leetCodeTextSecondary)
-                        .tracking(0.5)
-
-                    Text("\(Int(progressPercentage * 100))%")
-                        .font(.system(size: 16, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 8)
-                        .background(
-                            Capsule()
-                                .fill(Color(hex: "F89F1B").opacity(0.75))
-                                .shadow(color: Color(hex: "F89F1B").opacity(0.15), radius: 8, x: 0, y: 4)
-                        )
-                }
-            }
-            .padding(.top, 12)
-
-            // Edit buttons with glassmorphism
-            HStack(spacing: 14) {
-                Button(action: { showingEditCoins = true }) {
-                    HStack(spacing: 10) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.leetCodeOrange.opacity(0.15))
-                                .frame(width: 36, height: 36)
-                            
-                            Image(systemName: "bitcoinsign.circle.fill")
-                                .font(.system(size: 18))
-                                .foregroundColor(.leetCodeOrange)
-                        }
-                        
-                        Text("Edit Current")
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundColor(.leetCodeTextPrimary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18)
-                            .fill(Color.glassBackground)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(Color.leetCodeOrange.opacity(0.05))
-                            )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(Color.glassBorder, lineWidth: 1.5)
-                    )
-                    .shadow(color: Color.leetCodeOrange.opacity(0.1), radius: 8, x: 0, y: 4)
-                }
-                .buttonStyle(TechButtonStyle())
-
-                Button(action: { showingEditTarget = true }) {
-                    HStack(spacing: 10) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.leetCodeGreen.opacity(0.15))
-                                .frame(width: 36, height: 36)
-                            
-                            Image(systemName: "target")
-                                .font(.system(size: 18))
-                                .foregroundColor(.leetCodeGreen)
-                        }
-                        
-                        Text("Edit Target")
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundColor(.leetCodeTextPrimary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18)
-                            .fill(Color.glassBackground)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(Color.leetCodeGreen.opacity(0.05))
-                            )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(Color.glassBorder, lineWidth: 1.5)
-                    )
-                    .shadow(color: Color.leetCodeGreen.opacity(0.1), radius: 8, x: 0, y: 4)
-                }
-                .buttonStyle(TechButtonStyle())
-            }
-        }
-        .padding(28)
-        .background(
-            RoundedRectangle(cornerRadius: 32)
-                .fill(Color.glassBackground)
-                .background(
-                    RoundedRectangle(cornerRadius: 32)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 32)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
-        )
-        .shadow(color: Color.black.opacity(0.1), radius: 30, x: 0, y: 15)
-        .shadow(color: Color.leetCodeOrange.opacity(0.1), radius: 20, x: 0, y: 8)
-        .sheet(isPresented: $showingEditCoins) {
-            EditCoinsView(title: "Edit Current Coins", coins: dataManager.userData.currentCoins) { newValue in
-                dataManager.updateCurrentCoins(newValue)
-            }
-        }
-        .sheet(isPresented: $showingEditTarget) {
-            TargetCoinsPickerView(currentTarget: dataManager.userData.targetCoins) { newValue in
-                dataManager.updateTargetCoins(newValue)
-            }
+    
+    private func getSummaryMessage() -> String {
+        if progressPercentage >= 1.0 {
+            return "Congratulations! You've reached your goal. Time to set a new target!"
+        } else if progressPercentage >= 0.8 {
+            return "You're almost there! Just \(max(0, dataManager.userData.targetCoins - dataManager.userData.currentCoins)) coins away from your goal."
+        } else if progressPercentage >= 0.5 {
+            return "Great progress! You're past the halfway mark. Keep the momentum going."
+        } else {
+            return "Your journey has begun! Complete daily missions to earn more coins."
         }
     }
-
-
 
     private var estimationCard: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack(spacing: 10) {
-                ZStack {
-                    Circle()
-                        .fill(Color.leetCodeOrange.opacity(0.15))
-                        .frame(width: 32, height: 32)
-                    
+        VStack(alignment: .leading, spacing: 16) {
+            // Header
+            HStack {
+                HStack(spacing: 10) {
                     Image(systemName: "clock.fill")
                         .font(.system(size: 16))
-                        .foregroundColor(.leetCodeOrange)
+                        .foregroundColor(.leetCodeBlue)
+                    
+                    Text("ESTIMATED TIME")
+                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .foregroundColor(.leetCodeTextSecondary)
+                        .tracking(1)
                 }
                 
-                Text("ESTIMATED TIME")
-                    .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    .foregroundColor(.leetCodeTextSecondary)
-                    .tracking(1.5)
+                Spacer()
+                
+                Button(action: { showingCoinInfo = true }) {
+                    ZStack {
+                        Circle()
+                            .stroke(Color.subtleGray, lineWidth: 1.5)
+                            .frame(width: 24, height: 24)
+                        
+                        Text("i")
+                            .font(.system(size: 12, weight: .semibold, design: .serif))
+                            .italic()
+                            .foregroundColor(.leetCodeTextSecondary)
+                    }
+                }
             }
 
             if dataManager.userData.estimatedMonthlyCoins > 0 {
-                HStack(spacing: 32) {
-                    VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("\(String(format: "%.1f", dataManager.userData.monthsToTarget))")
-                            .font(.system(size: 36, weight: .bold, design: .monospaced))
-                            .foregroundStyle(Color.leetCodeGradient)
-                            .shadow(color: Color.leetCodeOrange.opacity(0.2), radius: 4, x: 0, y: 2)
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundColor(.leetCodeTextPrimary)
                         Text("Months")
-                            .font(.system(size: 13, weight: .medium, design: .monospaced))
+                            .font(.system(size: 12, weight: .medium, design: .monospaced))
                             .foregroundColor(.leetCodeTextSecondary)
                             .tracking(0.5)
                     }
 
                     Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.clear, Color.subtleGray, Color.clear],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(width: 1.5, height: 60)
+                        .fill(Color.subtleGray.opacity(0.5))
+                        .frame(width: 1, height: 50)
 
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("~\(dataManager.userData.daysToTarget)")
-                            .font(.system(size: 36, weight: .bold, design: .monospaced))
-                            .foregroundStyle(Color.greenGradient)
-                            .shadow(color: Color.leetCodeGreen.opacity(0.2), radius: 4, x: 0, y: 2)
+                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .foregroundColor(.leetCodeBlue)
                         Text("Days")
-                            .font(.system(size: 13, weight: .medium, design: .monospaced))
+                            .font(.system(size: 12, weight: .medium, design: .monospaced))
                             .foregroundColor(.leetCodeTextSecondary)
                             .tracking(0.5)
                     }
@@ -457,50 +551,32 @@ struct DashboardView: View {
                     Spacer()
                 }
 
-                // Progress details with glass effect
-                VStack(spacing: 12) {
-                    HStack {
-                        Text("Remaining")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundColor(.leetCodeTextSecondary)
-                        Spacer()
-                        Text("\(max(0, dataManager.userData.targetCoins - dataManager.userData.currentCoins))")
-                            .font(.system(size: 16, weight: .bold, design: .monospaced))
-                            .foregroundColor(.leetCodeTextPrimary)
-                        Text("coins")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundColor(.leetCodeTextSecondary)
-                    }
-
-                    Divider()
-                        .background(Color.subtleGray.opacity(0.5))
-
-                    HStack {
-                        Text("Monthly rate")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .foregroundColor(.leetCodeTextSecondary)
-                        Spacer()
-                        Button(action: { showingEditMonthlyRate = true }) {
-                            HStack(spacing: 6) {
-                                Text("\(dataManager.userData.estimatedMonthlyCoins)")
-                                    .font(.system(size: 16, weight: .bold, design: .monospaced))
-                                Text("coins/mo")
-                                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                                Image(systemName: "pencil")
-                                    .font(.system(size: 12, weight: .semibold))
-                            }
-                            .foregroundColor(.leetCodeOrange)
+                // Monthly rate row
+                HStack {
+                    Text("Monthly rate")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.leetCodeTextSecondary)
+                    Spacer()
+                    Button(action: { showingEditMonthlyRate = true }) {
+                        HStack(spacing: 6) {
+                            Text("\(dataManager.userData.estimatedMonthlyCoins)")
+                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                            Text("coins/mo")
+                                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                            Image(systemName: "pencil")
+                                .font(.system(size: 11, weight: .semibold))
                         }
+                        .foregroundColor(.leetCodeBlue)
                     }
                 }
-                .padding(18)
+                .padding(14)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.glassBackground)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.glassBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.whoopDarkElevated)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                        )
                 )
             } else {
                 HStack(spacing: 12) {
@@ -515,88 +591,42 @@ struct DashboardView: View {
                     }
 
                     Text("Enable Daily or Weekly Luck in Settings to see estimation")
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundColor(.leetCodeTextSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(18)
+                .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.glassBackground)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.glassBorder, lineWidth: 1)
-                )
-            }
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.glassBackground)
-                .background(
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.whoopDarkElevated)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
                         )
                 )
-        )
-        .overlay(
+            }
+        }
+        .padding(20)
+        .background(
             RoundedRectangle(cornerRadius: 24)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.6), Color.white.opacity(0.2)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
+                .fill(Color.cardBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
                 )
         )
-        .shadow(color: Color.black.opacity(0.08), radius: 25, x: 0, y: 12)
-    }
-}
-
-struct QuickActionButton: View {
-    let icon: String
-    let label: String
-    let value: String
-    let color: Color
-    let action: () -> Void
-
-    @State private var isPressed = false
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 10) {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.12))
-                        .frame(width: 48, height: 48)
-
-                    Image(systemName: icon)
-                        .font(.system(size: 22))
-                        .foregroundColor(color)
-                }
-
-                Text(label)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.leetCodeTextSecondary)
-
-                Text(value)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundColor(color)
+        .padding(.horizontal, 20)
+        .sheet(isPresented: $showingEditCoins) {
+            EditCoinsView(title: "Edit Current Coins", coins: dataManager.userData.currentCoins) { newValue in
+                dataManager.updateCurrentCoins(newValue)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(Color.pageBackground)
-            .cornerRadius(16)
         }
-        .buttonStyle(ScaleButtonStyle())
+        .sheet(isPresented: $showingEditTarget) {
+            TargetCoinsPickerView(currentTarget: dataManager.userData.targetCoins) { newValue in
+                dataManager.updateTargetCoins(newValue)
+            }
+        }
     }
 }
 
@@ -663,49 +693,105 @@ struct AddCoinsSheet: View {
             ZStack {
                 Color.pageBackground.ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 24) {
+                VStack(spacing: 0) {
+                    // Navigation bar
+                    HStack {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.leetCodeTextPrimary)
+                        }
+                        
+                        Spacer()
+                        
+                        Text("ADD COINS")
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(.leetCodeTextPrimary)
+                            .tracking(1.5)
+                        
+                        Spacer()
+                        
+                        Button(action: { dismiss() }) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.subtleGray.opacity(0.3))
+                                    .frame(width: 32, height: 32)
+                                
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 24) {
+                            // Header Section
+                            VStack(spacing: 8) {
+                                Text("Add coins to")
+                                    .font(.system(size: 26, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                
+                                Text("your progress")
+                                    .font(.system(size: 26, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                            }
+                            .padding(.top, 8)
+                        
                         // Time Travel Button
                         Button(action: { showingTimeTravel = true }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "clock.arrow.circlepath")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.leetCodeOrange)
+                            HStack(spacing: 14) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.leetCodeOrange.opacity(0.15))
+                                        .frame(width: 44, height: 44)
+                                    
+                                    Image(systemName: "clock.arrow.circlepath")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.leetCodeOrange)
+                                }
                                 
-                                Text("Forgot to log something? Time Travel")
-                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.leetCodeTextPrimary)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Forgot to log something?")
+                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.leetCodeTextPrimary)
+                                    
+                                    Text("Time Travel")
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                }
                                 
                                 Spacer()
                                 
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(.leetCodeTextSecondary)
                             }
                             .padding(16)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
                                     .fill(Color.cardBackground)
-                                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                    )
                             )
                         }
                         .padding(.horizontal, 20)
                         
-                        // Horizontal Options
-                        VStack(alignment: .leading, spacing: 24) {
+                        // Sections
+                        VStack(alignment: .leading, spacing: 20) {
                             ForEach(sections) { section in
                                 VStack(alignment: .leading, spacing: 12) {
-                                    Text(section.title)
-                                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                    Text(section.title.uppercased())
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
                                         .foregroundColor(.leetCodeTextSecondary)
-                                        .textCase(.uppercase)
-                                        .tracking(0.5)
+                                        .tracking(1.5)
+                                        .padding(.horizontal, 20)
 
-                                    VStack(spacing: 12) {
+                                    VStack(spacing: 8) {
                                         ForEach(section.options) { option in
                                             let isCompleted = option.oneTimeKey.map { dataManager.isOneTimeMissionCompleted($0) } ?? false
                                             let isActivityCompleted = option.activityType.map { dataManager.isActivityCompletedToday($0) } ?? false
@@ -732,24 +818,24 @@ struct AddCoinsSheet: View {
 
                                                 dismiss()
                                             }) {
-                                                HStack(spacing: 16) {
+                                                HStack(spacing: 14) {
                                                     ZStack {
                                                         Circle()
-                                                            .fill(option.color.opacity(0.12))
-                                                            .frame(width: 44, height: 44)
+                                                            .fill(option.color.opacity(0.15))
+                                                            .frame(width: 40, height: 40)
 
                                                         Image(systemName: option.icon)
-                                                            .font(.system(size: 20))
+                                                            .font(.system(size: 18))
                                                             .foregroundColor(option.color)
                                                     }
 
                                                     VStack(alignment: .leading, spacing: 2) {
                                                         Text(option.title)
-                                                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                                                            .font(.system(size: 15, weight: .semibold, design: .rounded))
                                                             .foregroundColor(.leetCodeTextPrimary)
 
                                                         Text(option.description)
-                                                            .font(.system(size: 12, weight: .regular, design: .rounded))
+                                                            .font(.system(size: 12, weight: .medium, design: .rounded))
                                                             .foregroundColor(.leetCodeTextSecondary)
                                                             .lineLimit(1)
                                                     }
@@ -757,146 +843,139 @@ struct AddCoinsSheet: View {
                                                     Spacer()
 
                                                     if isOptionCompleted {
-                                                        Text("Completed")
-                                                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                                                        Text("Done")
+                                                            .font(.system(size: 13, weight: .bold, design: .rounded))
                                                             .foregroundColor(.leetCodeGreen)
                                                     } else {
                                                         Text("+\(option.coins)")
-                                                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                                                            .font(.system(size: 16, weight: .bold, design: .monospaced))
                                                             .foregroundColor(option.color)
                                                     }
                                                 }
-                                                .padding(16)
+                                                .padding(14)
                                                 .background(
-                                                    RoundedRectangle(cornerRadius: 24)
+                                                    RoundedRectangle(cornerRadius: 14)
                                                         .fill(Color.cardBackground)
-                                                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
-                                                )
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 24)
-                                                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+                                                        .overlay(
+                                                            RoundedRectangle(cornerRadius: 14)
+                                                                .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                                        )
                                                 )
                                             }
                                             .disabled(isOptionCompleted)
-                                            .opacity(isOptionCompleted ? 0.6 : 1)
+                                            .opacity(isOptionCompleted ? 0.5 : 1)
                                             .buttonStyle(ScaleButtonStyle())
                                         }
                                     }
+                                    .padding(.horizontal, 20)
                                 }
-                                .padding(.horizontal, 20)
                             }
                         }
-                        .padding(.horizontal, 20)
                             
-                            // Custom Amount
-                            VStack(alignment: .leading, spacing: 16) {
-                                Text("Custom Entry")
-                                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                    .foregroundColor(.leetCodeTextSecondary)
-                                    .textCase(.uppercase)
-                                    .tracking(0.5)
-                                    .padding(.horizontal, 20)
+                        // Custom Amount
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("CUSTOM ENTRY")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .tracking(1.5)
+                                .padding(.horizontal, 20)
+                            
+                            HStack(spacing: 14) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.subtleGray.opacity(0.3))
+                                        .frame(width: 40, height: 40)
+                                    
+                                    Image(systemName: "pencil")
+                                        .font(.system(size: 18))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                }
                                 
-                                HStack(spacing: 16) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Custom Amount")
+                                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.leetCodeTextPrimary)
+                                    
+                                    TextField("Enter coins...", text: $customAmount)
+                                        .keyboardType(.numberPad)
+                                        .font(.system(size: 13, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .focused($isCustomAmountFocused)
+                                }
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    if let amount = Int(customAmount), amount > 0 {
+                                        dataManager.addCoins(amount)
+                                        customAmount = ""
+                                        isCustomAmountFocused = false
+                                        dismiss()
+                                    }
+                                }) {
                                     ZStack {
                                         Circle()
-                                            .fill(Color.gray.opacity(0.12))
-                                            .frame(width: 44, height: 44)
+                                            .fill(Int(customAmount) ?? 0 > 0 ? Color.leetCodeGreen : Color.subtleGray.opacity(0.3))
+                                            .frame(width: 36, height: 36)
                                         
-                                        Image(systemName: "pencil")
-                                            .font(.system(size: 20))
-                                            .foregroundColor(.leetCodeTextSecondary)
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Custom Amount")
-                                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                                            .foregroundColor(.leetCodeTextPrimary)
-                                        
-                                        TextField("Enter coins...", text: $customAmount)
-                                            .keyboardType(.numberPad)
-                                            .font(.system(size: 14, design: .rounded))
-                                            .focused($isCustomAmountFocused)
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    Button(action: {
-                                        if let amount = Int(customAmount), amount > 0 {
-                                            dataManager.addCoins(amount)
-                                            customAmount = ""
-                                            isCustomAmountFocused = false
-                                            dismiss()
-                                        }
-                                    }) {
                                         Image(systemName: "plus")
-                                            .font(.system(size: 16, weight: .bold))
-                                            .foregroundColor(.white)
-                                            .frame(width: 32, height: 32)
-                                            .background(
-                                                Circle()
-                                                    .fill(Int(customAmount) ?? 0 > 0 ? Color.leetCodeOrange : Color.gray.opacity(0.3))
-                                            )
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundColor(Int(customAmount) ?? 0 > 0 ? .black : .leetCodeTextSecondary)
                                     }
-                                    .disabled((Int(customAmount) ?? 0) <= 0)
-                                    .animation(.easeInOut, value: customAmount)
                                 }
-                                .padding(16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .fill(Color.cardBackground)
-                                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                                )
-                                .padding(.horizontal, 20)
+                                .disabled((Int(customAmount) ?? 0) <= 0)
                             }
+                            .padding(14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(Color.cardBackground)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                    )
+                            )
+                            .padding(.horizontal, 20)
+                        }
 
-                        // Summary
-                        VStack(alignment: .leading, spacing: 16) {
-                             Text("Current Status")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        // Current Status
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("CURRENT STATUS")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
                                 .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
+                                .tracking(1.5)
                                 .padding(.horizontal, 20)
                             
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Total Coins")
-                                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                                        .font(.system(size: 13, weight: .medium, design: .rounded))
                                         .foregroundColor(.leetCodeTextSecondary)
                                     Text("\(dataManager.userData.currentCoins)")
                                         .font(.system(size: 32, weight: .bold, design: .rounded))
-                                        .foregroundColor(.leetCodeTextPrimary)
+                                        .foregroundColor(.leetCodeGreen)
                                 }
                                 Spacer()
                             }
                             .padding(20)
-                            .background(Color.cardBackground)
-                            .cornerRadius(20)
-                            .shadow(color: Color.black.opacity(0.06), radius: 20, x: 0, y: 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.cardBackground)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.leetCodeGreen.opacity(0.3), lineWidth: 1)
+                                    )
+                            )
                             .padding(.horizontal, 20)
                         }
                     }
-                    .padding(.vertical, 24)
-                }
-            }
-            .navigationTitle("Add Coins")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                    .padding(.vertical, 16)
+                    .padding(.bottom, 32)
                     }
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundColor(.leetCodeOrange)
                 }
             }
+            .navigationBarHidden(true)
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(.dark)
         .sheet(isPresented: $showingTimeTravel) {
             TimeTravelView()
         }
@@ -951,74 +1030,132 @@ struct EditMonthlyRateView: View {
             ZStack {
                 Color.pageBackground.ignoresSafeArea()
                 
-                VStack(spacing: 24) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Monthly Rate")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundColor(.leetCodeTextSecondary)
-                            .textCase(.uppercase)
-                            .tracking(0.5)
+                VStack(spacing: 0) {
+                    // Navigation bar
+                    HStack {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.leetCodeTextPrimary)
+                        }
                         
-                        TextField("Coins per month", text: $rateText)
-                            .keyboardType(.numberPad)
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .padding(24)
-                            .background(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .fill(Color.cardBackground)
-                                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                            )
-                            
-                        Text("This value determines the estimated time to reach your target.")
-                            .font(.system(size: 14, design: .rounded))
-                            .foregroundColor(.leetCodeTextSecondary)
-                            .padding(.top, 8)
-                    }
-                    
-                    if dataManager.userData.customMonthlyRate != nil {
+                        Spacer()
+                        
+                        Text("EDIT RATE")
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(.leetCodeTextPrimary)
+                            .tracking(1.5)
+                        
+                        Spacer()
+                        
                         Button(action: {
-                            dataManager.updateCustomMonthlyRate(nil)
-                            dismiss()
+                            if let rate = Int(rateText), rate > 0 {
+                                dataManager.updateCustomMonthlyRate(rate)
+                                dismiss()
+                            }
                         }) {
-                            Text("Reset to Automatic Calculation")
-                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundColor(.leetCodeOrange)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.leetCodeOrange.opacity(0.1))
-                                .cornerRadius(12)
+                            ZStack {
+                                Circle()
+                                    .fill(rateText.isEmpty ? Color.subtleGray.opacity(0.3) : Color.leetCodeGreen.opacity(0.15))
+                                    .frame(width: 32, height: 32)
+                                
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(rateText.isEmpty ? .leetCodeTextSecondary : .leetCodeGreen)
+                            }
                         }
+                        .disabled(rateText.isEmpty)
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
                     
-                    Spacer()
-                }
-                .padding(24)
-            }
-            .navigationTitle("Edit Rate")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundColor(.leetCodeTextSecondary)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        if let rate = Int(rateText), rate > 0 {
-                            dataManager.updateCustomMonthlyRate(rate)
-                            dismiss()
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 24) {
+                            // Header
+                            VStack(spacing: 8) {
+                                Text("Set your")
+                                    .font(.system(size: 26, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                
+                                Text("Monthly Rate")
+                                    .font(.system(size: 26, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                            }
+                            .padding(.top, 8)
+                            
+                            // Input card
+                            VStack(spacing: 20) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("COINS PER MONTH")
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .tracking(1.5)
+                                    
+                                    TextField("Enter rate", text: $rateText)
+                                        .keyboardType(.numberPad)
+                                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                                        .foregroundColor(.leetCodeTextPrimary)
+                                        .padding(20)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .fill(Color.whoopDarkElevated)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 16)
+                                                        .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                                )
+                                        )
+                                }
+                                
+                                Text("This value determines the estimated time to reach your target.")
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundColor(.leetCodeTextSecondary)
+                            }
+                            .padding(20)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(Color.cardBackground)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                    )
+                            )
+                            .padding(.horizontal, 20)
+                            
+                            if dataManager.userData.customMonthlyRate != nil {
+                                Button(action: {
+                                    dataManager.updateCustomMonthlyRate(nil)
+                                    dismiss()
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "arrow.counterclockwise")
+                                            .font(.system(size: 14, weight: .semibold))
+                                        
+                                        Text("Reset to Automatic")
+                                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                    }
+                                    .foregroundColor(.leetCodeOrange)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .fill(Color.leetCodeOrange.opacity(0.1))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 14)
+                                                    .stroke(Color.leetCodeOrange.opacity(0.3), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                                .padding(.horizontal, 20)
+                            }
                         }
+                        .padding(.top, 8)
+                        .padding(.bottom, 32)
                     }
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundColor(rateText.isEmpty ? .gray : .leetCodeOrange)
-                    .disabled(rateText.isEmpty)
                 }
             }
+            .navigationBarHidden(true)
         }
+        .preferredColorScheme(.dark)
         .onAppear {
             if let currentRate = dataManager.userData.customMonthlyRate {
                 rateText = "\(currentRate)"
@@ -1043,148 +1180,182 @@ struct TargetCoinsPickerView: View {
             ZStack {
                 Color.pageBackground.ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        // Preset rewards
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("LeetCode Rewards")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-
-                            VStack(spacing: 10) {
-                                ForEach(LeetCodeReward.allRewards) { reward in
-                                    RewardOptionRow(
-                                        reward: reward,
-                                        isSelected: selectedReward?.id == reward.id,
-                                        action: {
-                                            selectedReward = reward
-                                            showCustomInput = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-
-                        // Custom amount option
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Custom Target")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                                .textCase(.uppercase)
-                                .tracking(0.5)
-
-                            Button(action: {
-                                showCustomInput = true
-                                selectedReward = nil
-                            }) {
-                                HStack(spacing: 14) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(Color.leetCodeYellow.opacity(0.12))
-                                            .frame(width: 44, height: 44)
-
-                                        Image(systemName: "pencil.circle.fill")
-                                            .font(.system(size: 22))
-                                            .foregroundColor(.leetCodeYellow)
-                                    }
-
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Custom Amount")
-                                            .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                            .foregroundColor(.leetCodeTextPrimary)
-                                        Text("Enter your own target")
-                                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                                            .foregroundColor(.leetCodeTextSecondary)
-                                    }
-
-                                    Spacer()
-
-                                    if showCustomInput {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 24))
-                                            .foregroundColor(.leetCodeOrange)
-                                    }
-                                }
-                                .padding(16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .fill(Color.cardBackground)
-                                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .stroke(showCustomInput ? Color.leetCodeOrange : Color.white.opacity(0.5), lineWidth: showCustomInput ? 2 : 1)
-                                )
-                            }
-                            .buttonStyle(ScaleButtonStyle())
-
-                            if showCustomInput {
-                                TextField("Target coins", text: $customAmount)
-                                    .keyboardType(.numberPad)
-                                    .font(.system(size: 32, weight: .semibold, design: .rounded))
-                                    .padding(20)
-                                    .background(Color.cardBackground)
-                                    .cornerRadius(16)
-                                    .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
-                                    .foregroundColor(.leetCodeTextPrimary)
-                            }
-                        }
-
-                        // Current target display
-                        HStack {
-                            Text("Current Target")
-                                .font(.system(size: 15, weight: .medium, design: .rounded))
-                                .foregroundColor(.leetCodeTextSecondary)
-                            Spacer()
-                            Text("\(currentTarget)")
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                VStack(spacing: 0) {
+                    // Navigation bar
+                    HStack {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(.leetCodeTextPrimary)
                         }
-                        .padding(24)
-                        .background(
-                            RoundedRectangle(cornerRadius: 24)
-                                .fill(Color.cardBackground)
-                                .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color.white.opacity(0.5), lineWidth: 1)
-                        )
-
-                        Spacer(minLength: 40)
-                    }
-                    .padding(20)
-                }
-            }
-            .navigationTitle("Select Target")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundColor(.leetCodeTextSecondary)
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        if let reward = selectedReward {
-                            onSave(reward.coins)
-                            dismiss()
-                        } else if let amount = Int(customAmount), amount > 0 {
-                            onSave(amount)
-                            dismiss()
+                        
+                        Spacer()
+                        
+                        Text("SET TARGET")
+                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .foregroundColor(.leetCodeTextPrimary)
+                            .tracking(1.5)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            if let reward = selectedReward {
+                                onSave(reward.coins)
+                                dismiss()
+                            } else if let amount = Int(customAmount), amount > 0 {
+                                onSave(amount)
+                                dismiss()
+                            }
+                        }) {
+                            ZStack {
+                                Circle()
+                                    .fill(canSave ? Color.leetCodeGreen.opacity(0.15) : Color.subtleGray.opacity(0.3))
+                                    .frame(width: 32, height: 32)
+                                
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(canSave ? .leetCodeGreen : .leetCodeTextSecondary)
+                            }
                         }
+                        .disabled(!canSave)
                     }
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundColor(canSave ? .leetCodeOrange : .gray)
-                    .disabled(!canSave)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 24) {
+                            // Header
+                            VStack(spacing: 8) {
+                                Text("Set your")
+                                    .font(.system(size: 26, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                                
+                                Text("Target Coins")
+                                    .font(.system(size: 26, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextPrimary)
+                            }
+                            .padding(.top, 8)
+                            
+                            VStack(spacing: 20) {
+                                // Preset rewards
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("LEETCODE REWARDS")
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .tracking(1.5)
+
+                                    VStack(spacing: 8) {
+                                        ForEach(LeetCodeReward.allRewards) { reward in
+                                            RewardOptionRow(
+                                                reward: reward,
+                                                isSelected: selectedReward?.id == reward.id,
+                                                action: {
+                                                    selectedReward = reward
+                                                    showCustomInput = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Custom amount option
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("CUSTOM TARGET")
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                        .tracking(1.5)
+
+                                    Button(action: {
+                                        showCustomInput = true
+                                        selectedReward = nil
+                                    }) {
+                                        HStack(spacing: 12) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.leetCodeYellow.opacity(0.15))
+                                                    .frame(width: 40, height: 40)
+
+                                                Image(systemName: "pencil.circle.fill")
+                                                    .font(.system(size: 18))
+                                                    .foregroundColor(.leetCodeYellow)
+                                            }
+
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text("Custom Amount")
+                                                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                                    .foregroundColor(.leetCodeTextPrimary)
+                                                Text("Enter your own target")
+                                                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                                                    .foregroundColor(.leetCodeTextSecondary)
+                                            }
+
+                                            Spacer()
+
+                                            if showCustomInput {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .font(.system(size: 22))
+                                                    .foregroundColor(.leetCodeGreen)
+                                            }
+                                        }
+                                        .padding(14)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .fill(Color.cardBackground)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 14)
+                                                        .stroke(showCustomInput ? Color.leetCodeGreen : Color.subtleGray.opacity(0.5), lineWidth: showCustomInput ? 2 : 1)
+                                                )
+                                        )
+                                    }
+                                    .buttonStyle(ScaleButtonStyle())
+
+                                    if showCustomInput {
+                                        TextField("Target coins", text: $customAmount)
+                                            .keyboardType(.numberPad)
+                                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                                            .foregroundColor(.leetCodeTextPrimary)
+                                            .padding(18)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 14)
+                                                    .fill(Color.whoopDarkElevated)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 14)
+                                                            .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                                    )
+                                            )
+                                    }
+                                }
+
+                                // Current target display
+                                HStack {
+                                    Text("Current Target")
+                                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                                        .foregroundColor(.leetCodeTextSecondary)
+                                    Spacer()
+                                    Text("\(currentTarget)")
+                                        .font(.system(size: 18, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.leetCodeGreen)
+                                }
+                                .padding(18)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(Color.cardBackground)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .stroke(Color.leetCodeGreen.opacity(0.3), lineWidth: 1)
+                                        )
+                                )
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 32)
+                        }
+                        .padding(.top, 8)
+                    }
                 }
             }
-        .preferredColorScheme(.light)
-    }
+            .navigationBarHidden(true)
+        }
+        .preferredColorScheme(.dark)
     }
 
     private var canSave: Bool {
@@ -1199,19 +1370,19 @@ struct RewardOptionRow: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 14) {
+            HStack(spacing: 12) {
                 Text(reward.emoji)
-                    .font(.system(size: 28))
-                    .frame(width: 44, height: 44)
-                    .background(Color.pageBackground)
-                    .cornerRadius(12)
+                    .font(.system(size: 24))
+                    .frame(width: 40, height: 40)
+                    .background(Color.whoopDarkElevated)
+                    .cornerRadius(10)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(reward.name)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.leetCodeTextPrimary)
                     Text("\(reward.coins) coins")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 12, weight: .medium, design: .monospaced))
                         .foregroundColor(.leetCodeTextSecondary)
                 }
 
@@ -1219,19 +1390,18 @@ struct RewardOptionRow: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.leetCodeOrange)
+                        .font(.system(size: 22))
+                        .foregroundColor(.leetCodeGreen)
                 }
             }
-            .padding(16)
+            .padding(14)
             .background(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: 14)
                     .fill(Color.cardBackground)
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 6)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(isSelected ? Color.leetCodeOrange : Color.white.opacity(0.5), lineWidth: isSelected ? 2 : 1)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(isSelected ? Color.leetCodeGreen : Color.subtleGray.opacity(0.5), lineWidth: isSelected ? 2 : 1)
+                    )
             )
         }
         .buttonStyle(ScaleButtonStyle())
