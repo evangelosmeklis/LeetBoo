@@ -44,8 +44,70 @@ struct SettingsView: View {
                             .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
                         }
 
-                        // Notification Settings Section
                         if dataManager.userData.activities.contains(where: { $0.isEnabled }) {
+                            // Magic Notifications Section
+                            VStack(alignment: .leading, spacing: 12) {
+                                Toggle(isOn: $magicNotificationsEnabled) {
+                                    HStack(spacing: 12) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color.purple.opacity(0.12))
+                                                .frame(width: 40, height: 40)
+                                            
+                                            Image(systemName: "wand.and.stars")
+                                                .font(.system(size: 18))
+                                                .foregroundColor(.purple)
+                                        }
+                                        
+                                        Text("Magic Notifications")
+                                            .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                            .foregroundColor(.leetCodeTextPrimary)
+                                    }
+                                }
+                                .toggleStyle(SwitchToggleStyle(tint: .leetCodeOrange))
+                                .padding(16)
+                                .onChange(of: magicNotificationsEnabled) { _, _ in
+                                    updateSettings()
+                                }
+                                
+                                if magicNotificationsEnabled {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "trophy.fill")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.leetCodeYellow)
+                                            Text("Weekend contest reminders")
+                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                        }
+                                        
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.leetCodeOrange)
+                                            Text("Monthly coins + goal progress")
+                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                        }
+                                        
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "lightbulb.fill")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.leetCodeYellow)
+                                            Text("Tips for earning more Leetcoins")
+                                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 16)
+                                }
+                            }
+                            .background(Color.cardBackground)
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+
+                            // Notification Settings Section
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Preferences")
                                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -137,59 +199,6 @@ struct SettingsView: View {
                                     .cornerRadius(12)
                                 }
                                 .padding(16)
-                                .background(Color.cardBackground)
-                                .cornerRadius(16)
-                                .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
-                                
-                                // Magic Notifications Section
-                                VStack(alignment: .leading, spacing: 12) {
-                                    Toggle(isOn: $magicNotificationsEnabled) {
-                                        HStack(spacing: 12) {
-                                            ZStack {
-                                                Circle()
-                                                    .fill(Color.purple.opacity(0.12))
-                                                    .frame(width: 40, height: 40)
-                                                
-                                                Image(systemName: "wand.and.stars")
-                                                    .font(.system(size: 18))
-                                                    .foregroundColor(.purple)
-                                            }
-                                            
-                                            Text("Magic Notifications")
-                                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                                .foregroundColor(.leetCodeTextPrimary)
-                                        }
-                                    }
-                                    .toggleStyle(SwitchToggleStyle(tint: .leetCodeOrange))
-                                    .padding(16)
-                                    .onChange(of: magicNotificationsEnabled) { _, _ in
-                                        updateSettings()
-                                    }
-                                    
-                                    if magicNotificationsEnabled {
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "trophy.fill")
-                                                    .font(.system(size: 14))
-                                                    .foregroundColor(.leetCodeYellow)
-                                                Text("Saturday Contest Reminders")
-                                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                                    .foregroundColor(.leetCodeTextSecondary)
-                                            }
-                                            
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "sparkles")
-                                                    .font(.system(size: 14))
-                                                    .foregroundColor(.leetCodeOrange)
-                                                Text("Random Encouragements & Updates")
-                                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                                    .foregroundColor(.leetCodeTextSecondary)
-                                            }
-                                        }
-                                        .padding(.horizontal, 16)
-                                        .padding(.bottom, 16)
-                                    }
-                                }
                                 .background(Color.cardBackground)
                                 .cornerRadius(16)
                                 .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
