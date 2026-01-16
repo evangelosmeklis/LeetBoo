@@ -193,7 +193,7 @@ struct DashboardView: View {
             FireworksView(isActive: showFireworks)
                 .allowsHitTesting(false)
         )
-        .onChange(of: dataManager.userData.currentCoins) { newCoins in
+        .onChange(of: dataManager.userData.currentCoins) { _, newCoins in
             if newCoins >= dataManager.userData.targetCoins && !showFireworks {
                 showFireworks = true
                 
