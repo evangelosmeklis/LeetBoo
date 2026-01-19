@@ -11,6 +11,7 @@ import UserNotifications
 @main
 struct LeetBooApp: App {
     @StateObject private var dataManager = DataManager()
+    @StateObject private var subscriptionManager = SubscriptionManager()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) private var scenePhase
 
@@ -22,6 +23,7 @@ struct LeetBooApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(dataManager)
+                .environmentObject(subscriptionManager)
                 .onAppear {
                     appDelegate.dataManager = dataManager
                 }
@@ -29,7 +31,19 @@ struct LeetBooApp: App {
                     if phase == .active {
                         dataManager.checkAndResetDailyActivities()
                         dataManager.checkAndShowBannersOnAppOpen()
+                        Task { await subscriptionManager.refreshSubscriptionStatus() }
                     }
+                }
+                .onChange(of: subscriptionManager.statusLoaded) { _, loaded in
+                    if loaded {
+                        dataManager.applySubscriptionStatus(isSubscribed: subscriptionManager.isSubscribed)
+                        NotificationManager.shared.scheduleNotifications(userData: dataManager.userData)
+                    }
+                }
+                .onChange(of: subscriptionManager.isSubscribed) { _, isSubscribed in
+                    guard subscriptionManager.statusLoaded else { return }
+                    dataManager.applySubscriptionStatus(isSubscribed: isSubscribed)
+                    NotificationManager.shared.scheduleNotifications(userData: dataManager.userData)
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
                     dataManager.checkAndResetDailyActivities()

@@ -71,7 +71,7 @@ class DataManager: ObservableObject {
 
     // MARK: - Activity Logging & Progress
 
-    func logActivity(type: ActivityType, date: Date) {
+    func logActivity(type: ActivityType, date: Date, shouldAddCoins: Bool = false) {
         let calendar = Calendar.current
         
         // Check if already logged for this date (to prevent duplicates for single-day activities)
@@ -84,16 +84,16 @@ class DataManager: ObservableObject {
             return
         }
 
-        // Add coins
-        // (If it's weekly luck, we might want to check week uniqueness, but keeping simple for now)
-        // Note: The actual coin addition often happens in specific methods, but if we use this for time travel,
-        // we should add the coins here if they haven't been added.
-        // For Time Travel, we call this directly. For daily usage, we might call this alongside confirmCheckIn.
-        
-        // Let's rely on the caller to add coins via addCoins() if needed, OR handling it here.
-        // To allow Time Travel to add coins:
-        if type == .dailyCheckIn { addCoins(1) }
-        else if type == .dailyProblem { addCoins(10) }
+        if shouldAddCoins {
+            switch type {
+            case .dailyCheckIn:
+                self.addCoins(1)
+            case .dailyProblem:
+                self.addCoins(10)
+            case .weeklyLuck:
+                self.addCoins(10)
+            }
+        }
         
         let newEntry = ActivityLogEntry(id: UUID(), date: date, activityType: type, coinsEarned: 0) // tracking coins separately for now
         userData.activityLog.append(newEntry)
@@ -262,6 +262,29 @@ class DataManager: ObservableObject {
         saveData()
     }
 
+    func applySubscriptionStatus(isSubscribed: Bool) {
+        guard !isSubscribed else { return }
+
+        if let weeklyIndex = userData.activities.firstIndex(where: { $0.type == .weeklyLuck }) {
+            userData.activities[weeklyIndex].isEnabled = false
+        }
+
+        if userData.customMonthlyRate != nil {
+            userData.customMonthlyRate = nil
+        }
+
+        var settings = userData.notificationSettings
+        settings.magicNotificationsEnabled = false
+        if settings.reminderFrequency != .once {
+            settings.reminderFrequency = .once
+            settings.adjustTimesForFrequency()
+        }
+
+        userData.notificationSettings = settings
+        showWeeklyLuckBanner = false
+        saveData()
+    }
+
     // MARK: - Check-In Banner Management
 
     func triggerCheckInBanner(for activityType: ActivityType) {
@@ -349,7 +372,7 @@ class DataManager: ObservableObject {
         markActivityDone(activityType)
         
         // Log activity for history/streak
-        logActivity(type: activityType, date: Date())
+        logActivity(type: activityType, date: Date(), shouldAddCoins: false)
 
         // Clear dismissal if any
         userData.dismissedBanners.removeValue(forKey: activityType.rawValue)

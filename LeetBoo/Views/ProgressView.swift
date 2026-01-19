@@ -2,6 +2,13 @@ import SwiftUI
 
 struct ProgressView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var subscriptionManager: SubscriptionManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var showingSubscription = false
+
+    private var contentMaxWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 640 : nil
+    }
     
     var overallProgress: Double {
         min(1.0, Double(dataManager.userData.currentCoins) / Double(max(1, dataManager.userData.targetCoins)))
@@ -38,7 +45,7 @@ struct ProgressView: View {
         }
         
         // Count weekly luck (if Monday)
-        if Calendar.current.component(.weekday, from: today) == 2 {
+        if subscriptionManager.isSubscribed, Calendar.current.component(.weekday, from: today) == 2 {
             if let weeklyLuck = dataManager.userData.activities.first(where: { $0.type == .weeklyLuck }), weeklyLuck.isEnabled {
                 totalCount += 1
                 if weeklyLuck.completedToday {
@@ -201,14 +208,24 @@ struct ProgressView: View {
                                     .background(Color.subtleGray.opacity(0.5))
                                     .padding(.horizontal, 20)
                                 
+                                let isPremiumLocked = !subscriptionManager.isSubscribed
+
                                 // Weekly Premium Challenges
-                                habitRow(
-                                    title: "Weekly Premium",
-                                    current: dataManager.isWeeklyMissionCompleted("weeklyPremium") ? 1 : 0,
-                                    target: 1,
-                                    color: .leetCodeGreen,
-                                    isEnabled: true
-                                )
+                                Button(action: {
+                                    if isPremiumLocked {
+                                        showingSubscription = true
+                                    }
+                                }) {
+                                    habitRow(
+                                        title: "Weekly Premium",
+                                        current: isPremiumLocked ? 0 : (dataManager.isWeeklyMissionCompleted("weeklyPremium") ? 1 : 0),
+                                        target: 1,
+                                        color: .leetCodeGreen,
+                                        isEnabled: !isPremiumLocked,
+                                        isLocked: isPremiumLocked
+                                    )
+                                }
+                                .buttonStyle(.plain)
                                 
                                 // Weekly Luck (only show if Monday)
                                 if Calendar.current.component(.weekday, from: Date()) == 2 {
@@ -216,13 +233,21 @@ struct ProgressView: View {
                                         .background(Color.subtleGray.opacity(0.5))
                                         .padding(.horizontal, 20)
                                     
-                                    habitRow(
-                                        title: "Lucky Monday",
-                                        current: dataManager.isActivityCompletedToday(.weeklyLuck) ? 1 : 0,
-                                        target: 1,
-                                        color: .leetCodeGreen,
-                                        isEnabled: dataManager.userData.activities.first(where: { $0.type == .weeklyLuck })?.isEnabled ?? false
-                                    )
+                                    Button(action: {
+                                        if isPremiumLocked {
+                                            showingSubscription = true
+                                        }
+                                    }) {
+                                        habitRow(
+                                            title: "Lucky Monday",
+                                            current: isPremiumLocked ? 0 : (dataManager.isActivityCompletedToday(.weeklyLuck) ? 1 : 0),
+                                            target: 1,
+                                            color: .leetCodeGreen,
+                                            isEnabled: dataManager.userData.activities.first(where: { $0.type == .weeklyLuck })?.isEnabled ?? false,
+                                            isLocked: isPremiumLocked
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                         }
@@ -275,12 +300,18 @@ struct ProgressView: View {
                         Spacer(minLength: 40)
                     }
                     .padding(.vertical, 24)
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
             .navigationTitle("Progress")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showingSubscription) {
+            SubscriptionView()
+        }
     }
     
     private func getWeeklyCount(for type: ActivityType) -> Int {
@@ -299,14 +330,23 @@ struct ProgressView: View {
         return Set(weekLogs.map { calendar.startOfDay(for: $0.date) }).count
     }
     
-    private func habitRow(title: String, current: Int, target: Int, color: Color, isEnabled: Bool) -> some View {
+    private func habitRow(title: String, current: Int, target: Int, color: Color, isEnabled: Bool, isLocked: Bool = false) -> some View {
         let isComplete = current >= target
-        
+        let displayText = isLocked ? "PRO" : "\(current)/\(target)"
+
         return HStack(spacing: 14) {
             // Title
-            Text(title)
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundColor(isEnabled ? .leetCodeTextPrimary : .leetCodeTextSecondary.opacity(0.6))
+            HStack(spacing: 6) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundColor(isEnabled ? .leetCodeTextPrimary : .leetCodeTextSecondary.opacity(0.6))
+
+                if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.leetCodeYellow)
+                }
+            }
             
             Spacer()
             
@@ -325,7 +365,7 @@ struct ProgressView: View {
                     .frame(width: 44, height: 44)
                     .rotationEffect(.degrees(-90))
                 
-                Text("\(current)/\(target)")
+                Text(displayText)
                     .font(.system(size: 11, weight: .bold, design: .monospaced))
                     .foregroundColor(isComplete ? color : .leetCodeTextSecondary)
             }

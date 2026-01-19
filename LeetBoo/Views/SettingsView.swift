@@ -5,6 +5,13 @@ struct SettingsView: View {
     @State private var reminderTimes: [Date]
     @State private var reminderFrequency: ReminderFrequency
     @State private var magicNotificationsEnabled: Bool
+    @State private var showingSubscription = false
+    @EnvironmentObject var subscriptionManager: SubscriptionManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var contentMaxWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 640 : nil
+    }
 
     init() {
         let settings = DataManager().userData.notificationSettings
@@ -56,7 +63,11 @@ struct SettingsView: View {
 
                             VStack(spacing: 0) {
                                 ForEach(dataManager.userData.activities) { activity in
-                                    ActivityToggleRow(activity: activity)
+                                    ActivityToggleRow(
+                                        activity: activity,
+                                        isPremiumLocked: activity.type == .weeklyLuck && !subscriptionManager.isSubscribed,
+                                        onPremiumTap: { showingSubscription = true }
+                                    )
                                     if activity.id != dataManager.userData.activities.last?.id {
                                         Divider()
                                             .background(Color.subtleGray.opacity(0.5))
@@ -72,10 +83,55 @@ struct SettingsView: View {
                                             .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
                                     )
                             )
+
+                            if !subscriptionManager.isSubscribed {
+                                Button(action: { showingSubscription = true }) {
+                                    HStack(spacing: 12) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(Color.leetCodeGreen.opacity(0.15))
+                                                .frame(width: 40, height: 40)
+
+                                            Image(systemName: "crown.fill")
+                                                .font(.system(size: 18, weight: .semibold))
+                                                .foregroundColor(.leetCodeGreen)
+                                        }
+
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Upgrade to Pro")
+                                                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                                .foregroundColor(.leetCodeTextPrimary)
+
+                                            Text("Unlock weekly luck + premium perks")
+                                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                        }
+
+                                        Spacer()
+
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.leetCodeTextSecondary)
+                                    }
+                                    .padding(16)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .fill(Color.cardBackground)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
+                                            )
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+
                         }
                         .padding(.horizontal, 20)
 
                         if dataManager.userData.activities.contains(where: { $0.isEnabled }) {
+                            let isMagicLocked = !subscriptionManager.isSubscribed
+
                             // Magic Notifications Section
                             VStack(alignment: .leading, spacing: 0) {
                                 Toggle(isOn: $magicNotificationsEnabled) {
@@ -93,10 +149,25 @@ struct SettingsView: View {
                                         Text("Magic Notifications")
                                             .font(.system(size: 16, weight: .semibold, design: .rounded))
                                             .foregroundColor(.leetCodeTextPrimary)
+
+                                        Spacer()
+
+                                        if isMagicLocked {
+                                            Label("Premium", systemImage: "lock.fill")
+                                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                                .foregroundColor(.leetCodeYellow)
+                                        }
                                     }
                                 }
                                 .toggleStyle(SwitchToggleStyle(tint: .leetCodeGreen))
                                 .padding(16)
+                                .disabled(isMagicLocked)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if isMagicLocked {
+                                        showingSubscription = true
+                                    }
+                                }
                                 .onChange(of: magicNotificationsEnabled) { _, _ in
                                     updateSettings()
                                 }
@@ -169,6 +240,8 @@ struct SettingsView: View {
 
                                 VStack(spacing: 12) {
                                     // Frequency picker
+                                    let availableFrequencies = subscriptionManager.isSubscribed ? ReminderFrequency.allCases : [.once]
+
                                     HStack {
                                         Text("Frequency")
                                             .font(.system(size: 15, weight: .semibold, design: .rounded))
@@ -182,7 +255,7 @@ struct SettingsView: View {
                                                 updateSettings()
                                             }
                                         )) {
-                                            ForEach(ReminderFrequency.allCases, id: \.self) { frequency in
+                                            ForEach(availableFrequencies, id: \.self) { frequency in
                                                 Text(frequency.rawValue).tag(frequency)
                                             }
                                         }
@@ -198,6 +271,18 @@ struct SettingsView: View {
                                                     .stroke(Color.subtleGray.opacity(0.5), lineWidth: 1)
                                             )
                                     )
+
+                                    if !subscriptionManager.isSubscribed {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "lock.fill")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.leetCodeYellow)
+                                            Text("Premium unlocks multiple reminders per day")
+                                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                                .foregroundColor(.leetCodeTextSecondary)
+                                        }
+                                        .padding(.horizontal, 12)
+                                    }
 
                                     // Reminder times
                                     VStack(spacing: 8) {
@@ -284,17 +369,27 @@ struct SettingsView: View {
                     }
                     .padding(.vertical, 20)
                     .padding(.bottom, 32)
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
         .onAppear {
             let settings = dataManager.userData.notificationSettings
             reminderTimes = settings.dailyReminderTimes
             reminderFrequency = settings.reminderFrequency
             magicNotificationsEnabled = settings.magicNotificationsEnabled
+            enforcePremiumLimits()
+        }
+        .onChange(of: subscriptionManager.isSubscribed) { _, _ in
+            enforcePremiumLimits()
+        }
+        .sheet(isPresented: $showingSubscription) {
+            SubscriptionView()
         }
     }
 
@@ -310,6 +405,21 @@ struct SettingsView: View {
         dataManager.updateNotificationSettings(newSettings)
 
         NotificationManager.shared.scheduleNotifications(userData: dataManager.userData)
+    }
+
+    private func enforcePremiumLimits() {
+        guard !subscriptionManager.isSubscribed else { return }
+
+        if reminderFrequency != .once {
+            reminderFrequency = .once
+            adjustTimesForFrequency()
+        }
+
+        if magicNotificationsEnabled {
+            magicNotificationsEnabled = false
+        }
+
+        updateSettings()
     }
 
     private func adjustTimesForFrequency() {
@@ -339,8 +449,10 @@ struct SettingsView: View {
 
 struct ActivityToggleRow: View {
     let activity: Activity
+    let isPremiumLocked: Bool
+    let onPremiumTap: () -> Void
     @EnvironmentObject var dataManager: DataManager
-
+    
     var body: some View {
         Toggle(isOn: binding) {
             HStack(spacing: 14) {
@@ -363,12 +475,29 @@ struct ActivityToggleRow: View {
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundColor(.leetCodeTextSecondary)
                 }
+
+                Spacer()
+
+                if isPremiumLocked {
+                    Label("Premium", systemImage: "lock.fill")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(.leetCodeYellow)
+                }
             }
             .padding(.vertical, 10)
         }
         .toggleStyle(SwitchToggleStyle(tint: .leetCodeGreen))
+        .disabled(isPremiumLocked)
+        .opacity(isPremiumLocked ? 0.6 : 1)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if isPremiumLocked {
+                onPremiumTap()
+            }
+        }
         .padding(.horizontal, 16)
     }
+
 
     private var iconName: String {
         switch activity.type {

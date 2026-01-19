@@ -7,6 +7,11 @@ struct EditCoinsView: View {
 
     @Environment(\.dismiss) var dismiss
     @State private var inputValue: String
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var contentMaxWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 640 : nil
+    }
 
     init(title: String, coins: Int, onSave: @escaping (Int) -> Void) {
         self.title = title
@@ -129,11 +134,14 @@ struct EditCoinsView: View {
                         }
                         .padding(.top, 8)
                         .padding(.bottom, 32)
+                        .frame(maxWidth: contentMaxWidth)
+                        .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
     }
 }

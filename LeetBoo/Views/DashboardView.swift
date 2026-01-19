@@ -8,9 +8,14 @@ struct DashboardView: View {
     @State private var showingEditMonthlyRate = false
     @State private var showingCoinInfo = false
     @State private var showFireworks = false
-
-    // Animation states
     @State private var appearAnimation = false
+    @State private var showingSubscription = false
+    @EnvironmentObject var subscriptionManager: SubscriptionManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var contentMaxWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 640 : nil
+    }
 
     var progressPercentage: Double {
         min(1.0, Double(dataManager.userData.currentCoins) / Double(max(1, dataManager.userData.targetCoins)))
@@ -77,16 +82,24 @@ struct DashboardView: View {
                             .transition(.move(edge: .top).combined(with: .opacity))
                         }
                     }
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
                     .zIndex(1)
 
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
                             // Header Section
-                            VStack(spacing: 8) {
+                            VStack(spacing: 6) {
+                                let dayOfMonth = Calendar.current.component(.day, from: Date())
+
+                                Text("Day \(dayOfMonth)")
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.leetCodeTextSecondary)
+
                                 Text("Understand your")
                                     .font(.system(size: 28, weight: .semibold, design: .rounded))
                                     .foregroundColor(.leetCodeTextPrimary)
-                                
+
                                 Text("Progress")
                                     .font(.system(size: 28, weight: .semibold, design: .rounded))
                                     .foregroundColor(.leetCodeTextPrimary)
@@ -103,22 +116,22 @@ struct DashboardView: View {
                                             .foregroundColor(.leetCodeTextPrimary)
                                     }
                                     .opacity(0) // Hidden for now
-                                    
+
                                     Spacer()
-                                    
+
                                     Text("TODAY")
                                         .font(.system(size: 13, weight: .bold, design: .monospaced))
                                         .foregroundColor(.leetCodeTextPrimary)
                                         .tracking(1.5)
-                                    
+
                                     Spacer()
-                                    
+
                                     Button(action: { showingCoinInfo = true }) {
                                         ZStack {
                                             Circle()
                                                 .stroke(Color.subtleGray, lineWidth: 1.5)
                                                 .frame(width: 28, height: 28)
-                                            
+
                                             Text("i")
                                                 .font(.system(size: 14, weight: .semibold, design: .serif))
                                                 .italic()
@@ -129,7 +142,7 @@ struct DashboardView: View {
                                 .padding(.horizontal, 20)
                                 .padding(.top, 20)
                                 .padding(.bottom, 16)
-                                
+
                                 // Large Circular Progress Indicator
                                 ZStack {
                                     // Background track
@@ -139,7 +152,7 @@ struct DashboardView: View {
                                             lineWidth: 16
                                         )
                                         .frame(width: 200, height: 200)
-                                    
+
                                     // Gray segment at top (small gap)
                                     Circle()
                                         .trim(from: 0.92, to: 1.0)
@@ -149,7 +162,7 @@ struct DashboardView: View {
                                         )
                                         .frame(width: 200, height: 200)
                                         .rotationEffect(.degrees(-90))
-                                    
+
                                     // Progress circle
                                     Circle()
                                         .trim(from: 0, to: min(progressPercentage, 0.92))
@@ -164,20 +177,20 @@ struct DashboardView: View {
                                         .frame(width: 200, height: 200)
                                         .rotationEffect(.degrees(-90))
                                         .animation(.spring(response: 0.8, dampingFraction: 0.7), value: progressPercentage)
-                                    
+
                                     // Center content
                                     VStack(spacing: 4) {
                                         Text("LEETBOO")
                                             .font(.system(size: 11, weight: .medium, design: .monospaced))
                                             .foregroundColor(.leetCodeTextSecondary)
                                             .tracking(2)
-                                        
+
                                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                                             Text("\(dataManager.userData.currentCoins)")
                                                 .font(.system(size: 52, weight: .bold, design: .rounded))
                                                 .foregroundColor(.leetCodeTextPrimary)
                                         }
-                                        
+
                                         Text("COINS")
                                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                                             .foregroundColor(.leetCodeGreen)
@@ -185,32 +198,32 @@ struct DashboardView: View {
                                     }
                                 }
                                 .padding(.vertical, 20)
-                                
+
                                 // Stats rows
                                 VStack(spacing: 0) {
                                     Divider()
                                         .background(Color.subtleGray.opacity(0.5))
-                                    
+
                                     // Target row
                                     HStack {
                                         HStack(spacing: 10) {
                                             Image(systemName: "target")
                                                 .font(.system(size: 16))
                                                 .foregroundColor(.leetCodeTextSecondary)
-                                            
+
                                             Text("TARGET")
                                                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
                                                 .tracking(1)
                                         }
-                                        
+
                                         Spacer()
-                                        
+
                                         HStack(spacing: 6) {
                                             Text("\(dataManager.userData.targetCoins)")
                                                 .font(.system(size: 16, weight: .bold, design: .monospaced))
                                                 .foregroundColor(.leetCodeGreen)
-                                            
+
                                             Image(systemName: "chevron.up")
                                                 .font(.system(size: 10, weight: .bold))
                                                 .foregroundColor(.leetCodeGreen)
@@ -218,50 +231,50 @@ struct DashboardView: View {
                                     }
                                     .padding(.horizontal, 20)
                                     .padding(.vertical, 14)
-                                    
+
                                     Divider()
                                         .background(Color.subtleGray.opacity(0.5))
-                                    
+
                                     // Progress row
                                     HStack {
                                         HStack(spacing: 10) {
                                             Image(systemName: "chart.line.uptrend.xyaxis")
                                                 .font(.system(size: 16))
                                                 .foregroundColor(.leetCodeTextSecondary)
-                                            
+
                                             Text("PROGRESS")
                                                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
                                                 .tracking(1)
                                         }
-                                        
+
                                         Spacer()
-                                        
+
                                         Text("\(Int(progressPercentage * 100))%")
                                             .font(.system(size: 16, weight: .bold, design: .monospaced))
                                             .foregroundColor(.leetCodeGreen)
                                     }
                                     .padding(.horizontal, 20)
                                     .padding(.vertical, 14)
-                                    
+
                                     Divider()
                                         .background(Color.subtleGray.opacity(0.5))
-                                    
+
                                     // Remaining row
                                     HStack {
                                         HStack(spacing: 10) {
                                             Image(systemName: "hourglass")
                                                 .font(.system(size: 16))
                                                 .foregroundColor(.leetCodeTextSecondary)
-                                            
+
                                             Text("REMAINING")
                                                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                                                 .foregroundColor(.leetCodeTextSecondary)
                                                 .tracking(1)
                                         }
-                                        
+
                                         Spacer()
-                                        
+
                                         Text("\(max(0, dataManager.userData.targetCoins - dataManager.userData.currentCoins))")
                                             .font(.system(size: 16, weight: .bold, design: .monospaced))
                                             .foregroundColor(.leetCodeTextSecondary)
@@ -269,7 +282,7 @@ struct DashboardView: View {
                                     .padding(.horizontal, 20)
                                     .padding(.vertical, 14)
                                 }
-                                
+
                                 // Today vs goal indicator
                                 HStack(spacing: 8) {
                                     HStack(spacing: 4) {
@@ -281,26 +294,26 @@ struct DashboardView: View {
                                             .foregroundColor(.leetCodeOrange)
                                             .rotationEffect(.degrees(180))
                                     }
-                                    
+
                                     Text("Today vs. goal")
                                         .font(.system(size: 12, weight: .medium, design: .rounded))
                                         .foregroundColor(.leetCodeTextSecondary)
                                 }
                                 .padding(.vertical, 12)
-                                
+
                                 // Summary message
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text(getSummaryMessage())
                                         .font(.system(size: 14, weight: .medium, design: .rounded))
                                         .foregroundColor(.leetCodeTextSecondary)
                                         .lineSpacing(4)
-                                    
+
                                     Button(action: { showingCoinInfo = true }) {
                                         HStack(spacing: 6) {
                                             Text("EXPLORE MY PROGRESS")
                                                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                                                 .tracking(0.5)
-                                            
+
                                             Image(systemName: "arrow.right")
                                                 .font(.system(size: 12, weight: .bold))
                                         }
@@ -342,12 +355,12 @@ struct DashboardView: View {
                                             Circle()
                                                 .fill(Color.leetCodeOrange.opacity(0.15))
                                                 .frame(width: 44, height: 44)
-                                            
+
                                             Image(systemName: "pencil")
                                                 .font(.system(size: 18, weight: .semibold))
                                                 .foregroundColor(.leetCodeOrange)
                                         }
-                                        
+
                                         Text("Edit Current")
                                             .font(.system(size: 12, weight: .semibold, design: .rounded))
                                             .foregroundColor(.leetCodeTextPrimary)
@@ -364,19 +377,19 @@ struct DashboardView: View {
                                     )
                                 }
                                 .buttonStyle(TechButtonStyle())
-                                
+
                                 Button(action: { showingEditTarget = true }) {
                                     VStack(spacing: 10) {
                                         ZStack {
                                             Circle()
                                                 .fill(Color.leetCodeGreen.opacity(0.15))
                                                 .frame(width: 44, height: 44)
-                                            
+
                                             Image(systemName: "target")
                                                 .font(.system(size: 18, weight: .semibold))
                                                 .foregroundColor(.leetCodeGreen)
                                         }
-                                        
+
                                         Text("Edit Target")
                                             .font(.system(size: 12, weight: .semibold, design: .rounded))
                                             .foregroundColor(.leetCodeTextPrimary)
@@ -407,6 +420,8 @@ struct DashboardView: View {
                         }
                         .padding(.top, 12)
                         .padding(.bottom, 32)
+                        .frame(maxWidth: contentMaxWidth)
+                        .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
@@ -423,7 +438,7 @@ struct DashboardView: View {
                                 Circle()
                                     .stroke(Color.subtleGray, lineWidth: 1.5)
                                     .frame(width: 40, height: 40)
-                                
+
                                 Text("i")
                                     .font(.system(size: 18, weight: .semibold, design: .serif))
                                     .italic()
@@ -437,7 +452,7 @@ struct DashboardView: View {
                                 Circle()
                                     .fill(Color.leetCodeGreen)
                                     .frame(width: 40, height: 40)
-                                
+
                                 Image(systemName: "plus")
                                     .font(.system(size: 20, weight: .bold))
                                     .foregroundStyle(.black)
@@ -456,8 +471,10 @@ struct DashboardView: View {
             .sheet(isPresented: $showingCoinInfo) {
                 CoinInfoView()
             }
+            .sheet(isPresented: $showingSubscription) {
+                SubscriptionView()
+            }
         }
-        .preferredColorScheme(.dark)
         .overlay(
             FireworksView(isActive: showFireworks)
                 .allowsHitTesting(false)
@@ -465,7 +482,7 @@ struct DashboardView: View {
         .onChange(of: dataManager.userData.currentCoins) { _, newCoins in
             if newCoins >= dataManager.userData.targetCoins && !showFireworks {
                 showFireworks = true
-                
+
                 // Stop fireworks after 4 seconds
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                     showFireworks = false
@@ -477,8 +494,10 @@ struct DashboardView: View {
             dataManager.checkAndResetDailyActivities()
             dataManager.checkAndShowBannersOnAppOpen()
         }
+        .navigationViewStyle(.stack)
+        .preferredColorScheme(.dark)
     }
-    
+
     private func getSummaryMessage() -> String {
         if progressPercentage >= 1.0 {
             return "Congratulations! You've reached your goal. Time to set a new target!"
@@ -499,21 +518,21 @@ struct DashboardView: View {
                     Image(systemName: "clock.fill")
                         .font(.system(size: 16))
                         .foregroundColor(.leetCodeBlue)
-                    
+
                     Text("ESTIMATED TIME")
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
                         .foregroundColor(.leetCodeTextSecondary)
                         .tracking(1)
                 }
-                
+
                 Spacer()
-                
+
                 Button(action: { showingCoinInfo = true }) {
                     ZStack {
                         Circle()
                             .stroke(Color.subtleGray, lineWidth: 1.5)
                             .frame(width: 24, height: 24)
-                        
+
                         Text("i")
                             .font(.system(size: 12, weight: .semibold, design: .serif))
                             .italic()
@@ -557,16 +576,22 @@ struct DashboardView: View {
                         .font(.system(size: 13, weight: .medium, design: .rounded))
                         .foregroundColor(.leetCodeTextSecondary)
                     Spacer()
-                    Button(action: { showingEditMonthlyRate = true }) {
+                    Button(action: {
+                        if subscriptionManager.isSubscribed {
+                            showingEditMonthlyRate = true
+                        } else {
+                            showingSubscription = true
+                        }
+                    }) {
                         HStack(spacing: 6) {
                             Text("\(dataManager.userData.estimatedMonthlyCoins)")
                                 .font(.system(size: 14, weight: .bold, design: .monospaced))
                             Text("coins/mo")
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            Image(systemName: "pencil")
+                            Image(systemName: subscriptionManager.isSubscribed ? "pencil" : "lock.fill")
                                 .font(.system(size: 11, weight: .semibold))
                         }
-                        .foregroundColor(.leetCodeBlue)
+                        .foregroundColor(subscriptionManager.isSubscribed ? .leetCodeBlue : .leetCodeTextSecondary)
                     }
                 }
                 .padding(14)
@@ -584,7 +609,7 @@ struct DashboardView: View {
                         Circle()
                             .fill(Color.leetCodeTextSecondary.opacity(0.1))
                             .frame(width: 36, height: 36)
-                        
+
                         Image(systemName: "info.circle.fill")
                             .font(.system(size: 18))
                             .foregroundColor(.leetCodeTextSecondary)
@@ -650,18 +675,25 @@ struct TechButtonStyle: ButtonStyle {
 struct AddCoinsSheet: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var subscriptionManager: SubscriptionManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     @State private var showingTimeTravel = false
     @State private var customAmount = ""
+    @State private var showingSubscription = false
     @FocusState private var isCustomAmountFocused: Bool
+
+    private var contentMaxWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 640 : nil
+    }
     
     let sections: [CoinSection] = [
         CoinSection(title: "Check-in Missions", options: [
             CoinOption(title: "Daily Check-in", description: "Log in each day", coins: 1, icon: "checkmark.circle.fill", color: .leetCodeGreen, activityType: .dailyCheckIn),
             CoinOption(title: "30 Day Check-in Streak", description: "Check in 30 days straight", coins: 30, icon: "flame.fill", color: .leetCodeOrange),
             CoinOption(title: "Complete Daily Challenge", description: "Finish the daily challenge", coins: 10, icon: "brain.head.profile.fill", color: .leetCodeOrange, activityType: .dailyProblem),
-            CoinOption(title: "Weekly Premium Challenges", description: "Complete weekly premium challenges", coins: 35, icon: "star.circle.fill", color: .leetCodeYellow, weeklyKey: "weeklyPremium"),
-            CoinOption(title: "Lucky Monday", description: "Claim on contest page", coins: 10, icon: "clover.fill", color: .leetCodeGreen, activityType: .weeklyLuck)
+            CoinOption(title: "Weekly Premium Challenges", description: "Complete weekly premium challenges", coins: 35, icon: "star.circle.fill", color: .leetCodeYellow, weeklyKey: "weeklyPremium", requiresSubscription: true),
+            CoinOption(title: "Lucky Monday", description: "Claim on contest page", coins: 10, icon: "leaf.fill", color: .leetCodeGreen, activityType: .weeklyLuck, requiresSubscription: true)
         ]),
         CoinSection(title: "Contribution Missions", options: [
             CoinOption(title: "Contribute a Testcase", description: "Submit a new testcase", coins: 100, icon: "doc.text.fill", color: .leetCodeGreen),
@@ -725,6 +757,8 @@ struct AddCoinsSheet: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
                     
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
@@ -741,7 +775,13 @@ struct AddCoinsSheet: View {
                             .padding(.top, 8)
                         
                         // Time Travel Button
-                        Button(action: { showingTimeTravel = true }) {
+                        Button(action: {
+                            if subscriptionManager.isSubscribed {
+                                showingTimeTravel = true
+                            } else {
+                                showingSubscription = true
+                            }
+                        }) {
                             HStack(spacing: 14) {
                                 ZStack {
                                     Circle()
@@ -764,8 +804,14 @@ struct AddCoinsSheet: View {
                                 }
                                 
                                 Spacer()
+
+                                if !subscriptionManager.isSubscribed {
+                                    Label("Premium", systemImage: "lock.fill")
+                                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                                        .foregroundColor(.leetCodeYellow)
+                                }
                                 
-                                Image(systemName: "chevron.right")
+                                Image(systemName: subscriptionManager.isSubscribed ? "chevron.right" : "lock")
                                     .font(.system(size: 14, weight: .semibold))
                                     .foregroundColor(.leetCodeTextSecondary)
                             }
@@ -796,9 +842,16 @@ struct AddCoinsSheet: View {
                                             let isCompleted = option.oneTimeKey.map { dataManager.isOneTimeMissionCompleted($0) } ?? false
                                             let isActivityCompleted = option.activityType.map { dataManager.isActivityCompletedToday($0) } ?? false
                                             let isWeeklyCompleted = option.weeklyKey.map { dataManager.isWeeklyMissionCompleted($0) } ?? false
+                                            let isLocked = option.requiresSubscription && !subscriptionManager.isSubscribed
                                             let isOptionCompleted = isCompleted || isActivityCompleted || isWeeklyCompleted
+                                            let isDisabled = isOptionCompleted || isLocked
 
                                             Button(action: {
+                                                if isLocked {
+                                                    showingSubscription = true
+                                                    return
+                                                }
+
                                                 if isOptionCompleted {
                                                     return
                                                 }
@@ -842,7 +895,11 @@ struct AddCoinsSheet: View {
 
                                                     Spacer()
 
-                                                    if isOptionCompleted {
+                                                    if isLocked {
+                                                        Label("Premium", systemImage: "lock.fill")
+                                                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                                                            .foregroundColor(.leetCodeYellow)
+                                                    } else if isOptionCompleted {
                                                         Text("Done")
                                                             .font(.system(size: 13, weight: .bold, design: .rounded))
                                                             .foregroundColor(.leetCodeGreen)
@@ -862,8 +919,8 @@ struct AddCoinsSheet: View {
                                                         )
                                                 )
                                             }
-                                            .disabled(isOptionCompleted)
-                                            .opacity(isOptionCompleted ? 0.5 : 1)
+                                            .disabled(isDisabled)
+                                            .opacity(isDisabled ? 0.5 : 1)
                                             .buttonStyle(ScaleButtonStyle())
                                         }
                                     }
@@ -970,14 +1027,20 @@ struct AddCoinsSheet: View {
                     }
                     .padding(.vertical, 16)
                     .padding(.bottom, 32)
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showingTimeTravel) {
             TimeTravelView()
+        }
+        .sheet(isPresented: $showingSubscription) {
+            SubscriptionView()
         }
     }
 }
@@ -998,6 +1061,7 @@ struct CoinOption: Identifiable {
     let oneTimeKey: String?
     let activityType: ActivityType?
     let weeklyKey: String?
+    let requiresSubscription: Bool
 
     init(
         title: String,
@@ -1007,7 +1071,8 @@ struct CoinOption: Identifiable {
         color: Color,
         oneTimeKey: String? = nil,
         activityType: ActivityType? = nil,
-        weeklyKey: String? = nil
+        weeklyKey: String? = nil,
+        requiresSubscription: Bool = false
     ) {
         self.title = title
         self.description = description
@@ -1017,6 +1082,7 @@ struct CoinOption: Identifiable {
         self.oneTimeKey = oneTimeKey
         self.activityType = activityType
         self.weeklyKey = weeklyKey
+        self.requiresSubscription = requiresSubscription
     }
 }
 
@@ -1155,6 +1221,7 @@ struct EditMonthlyRateView: View {
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
         .onAppear {
             if let currentRate = dataManager.userData.customMonthlyRate {
@@ -1355,6 +1422,7 @@ struct TargetCoinsPickerView: View {
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
     }
 

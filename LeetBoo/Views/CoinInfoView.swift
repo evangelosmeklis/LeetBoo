@@ -2,6 +2,11 @@ import SwiftUI
 
 struct CoinInfoView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var contentMaxWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 640 : nil
+    }
 
     var body: some View {
         NavigationView {
@@ -40,6 +45,8 @@ struct CoinInfoView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity)
                     
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
@@ -115,11 +122,14 @@ struct CoinInfoView: View {
                             Spacer(minLength: 40)
                         }
                         .padding(.bottom, 32)
+                        .frame(maxWidth: contentMaxWidth)
+                        .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
     }
     

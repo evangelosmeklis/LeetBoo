@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		58A2EB362F1E5076001EF09D /* LeetBooNew.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 58A2EB352F1E5076001EF09D /* LeetBooNew.storekit */; };
+		58FFD36B2F1E4DE300E690A9 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58FFD36A2F1E4DE300E690A9 /* StoreKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		58ADDAF72F0D63EC008553A8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +29,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		58A2EB352F1E5076001EF09D /* LeetBooNew.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = LeetBooNew.storekit; sourceTree = "<group>"; };
 		58ADDAE92F0D63EB008553A8 /* LeetBoo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeetBoo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		58ADDAF62F0D63EC008553A8 /* LeetBooTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeetBooTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		58ADDB002F0D63EC008553A8 /* LeetBooUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LeetBooUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		58FFD36A2F1E4DE300E690A9 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				58FFD36B2F1E4DE300E690A9 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +83,11 @@
 		58ADDAE02F0D63EB008553A8 = {
 			isa = PBXGroup;
 			children = (
+				58A2EB352F1E5076001EF09D /* LeetBooNew.storekit */,
 				58ADDAEB2F0D63EB008553A8 /* LeetBoo */,
 				58ADDAF92F0D63EC008553A8 /* LeetBooTests */,
 				58ADDB032F0D63EC008553A8 /* LeetBooUITests */,
+				58FFD3692F1E4DE300E690A9 /* Frameworks */,
 				58ADDAEA2F0D63EB008553A8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +100,14 @@
 				58ADDB002F0D63EC008553A8 /* LeetBooUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		58FFD3692F1E4DE300E690A9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				58FFD36A2F1E4DE300E690A9 /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -212,6 +230,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				58A2EB362F1E5076001EF09D /* LeetBooNew.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,7 +415,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 6AWG6XKD86;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -409,7 +428,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = evangelosmeklis.LeetBoo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -424,7 +443,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 6AWG6XKD86;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -437,7 +456,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = evangelosmeklis.LeetBoo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -451,11 +470,11 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 6AWG6XKD86;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = evangelosmeklis.LeetBooTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -470,11 +489,11 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 6AWG6XKD86;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = evangelosmeklis.LeetBooTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -488,10 +507,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 6AWG6XKD86;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = evangelosmeklis.LeetBooUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -505,10 +524,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 6AWG6XKD86;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = evangelosmeklis.LeetBooUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;

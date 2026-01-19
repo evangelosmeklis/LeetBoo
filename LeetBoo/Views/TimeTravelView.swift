@@ -3,9 +3,14 @@ import SwiftUI
 struct TimeTravelView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var dataManager: DataManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     @State private var selectedDate = Date()
     @State private var selectedActivities: Set<ActivityType> = [.dailyCheckIn]
+
+    private var contentMaxWidth: CGFloat? {
+        horizontalSizeClass == .regular ? 640 : nil
+    }
     
     var body: some View {
         NavigationView {
@@ -44,6 +49,8 @@ struct TimeTravelView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
+                    .frame(maxWidth: contentMaxWidth)
+                    .frame(maxWidth: .infinity)
                     
                     ScrollView(showsIndicators: false) {
                         VStack(spacing: 24) {
@@ -100,7 +107,7 @@ struct TimeTravelView: View {
                             // Action Button
                             Button(action: {
                                 for activity in selectedActivities {
-                                    dataManager.logActivity(type: activity, date: selectedDate)
+                                    dataManager.logActivity(type: activity, date: selectedDate, shouldAddCoins: true)
                                 }
                                 dismiss()
                             }) {
@@ -124,11 +131,14 @@ struct TimeTravelView: View {
                             .padding(.bottom, 32)
                         }
                         .padding(.top, 8)
+                        .frame(maxWidth: contentMaxWidth)
+                        .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
             .navigationBarHidden(true)
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(.dark)
     }
     
