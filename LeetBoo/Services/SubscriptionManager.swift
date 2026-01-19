@@ -7,8 +7,6 @@ class SubscriptionManager: ObservableObject {
     @Published private(set) var products: [Product] = []
     @Published private(set) var statusLoaded = false
     @Published private(set) var productsLoaded = false
-    @Published private(set) var loadedProductIDs: [String] = []
-    @Published private(set) var storeKitConfigPath: String = ""
     @Published var isLoading = false
     @Published var lastError: String?
 
@@ -17,9 +15,6 @@ class SubscriptionManager: ObservableObject {
 
     init() {
         updatesTask = Task { await observeTransactions() }
-        storeKitConfigPath = ProcessInfo.processInfo.environment["STOREKIT_CONFIGURATION_FILE_PATH"]
-            ?? ProcessInfo.processInfo.environment["STOREKIT_CONFIGURATION_PATH"]
-            ?? ""
         Task {
             await loadProducts()
             await refreshSubscriptionStatus()
@@ -36,12 +31,10 @@ class SubscriptionManager: ObservableObject {
 
         do {
             products = try await Product.products(for: productIDs)
-            loadedProductIDs = products.map { $0.id }
             if products.isEmpty {
                 lastError = "Premium is unavailable right now."
             }
         } catch {
-            loadedProductIDs = []
             lastError = error.localizedDescription
         }
 

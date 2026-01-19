@@ -45,27 +45,10 @@ struct SubscriptionView: View {
                                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                                 .foregroundColor(.leetCodeTextPrimary)
                         } else if subscriptionManager.productsLoaded {
-                            VStack(spacing: 6) {
-                                Text(subscriptionManager.lastError ?? "Premium is unavailable right now.")
-                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundColor(.leetCodeTextSecondary)
-                                    .multilineTextAlignment(.center)
-
-                                if !subscriptionManager.loadedProductIDs.isEmpty {
-                                    Text("StoreKit returned: \(subscriptionManager.loadedProductIDs.joined(separator: ", "))")
-                                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                        .foregroundColor(.leetCodeTextSecondary)
-                                } else if !subscriptionManager.storeKitConfigPath.isEmpty {
-                                    Text("StoreKit config: \(subscriptionManager.storeKitConfigPath)")
-                                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                        .foregroundColor(.leetCodeTextSecondary)
-                                        .lineLimit(2)
-                                } else {
-                                    Text("StoreKit config not active")
-                                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                        .foregroundColor(.leetCodeTextSecondary)
-                                }
-                            }
+                            Text(subscriptionManager.lastError ?? "Premium is unavailable right now.")
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundColor(.leetCodeTextSecondary)
+                                .multilineTextAlignment(.center)
                         } else {
                             SwiftUI.ProgressView()
                                 .tint(.leetCodeGreen)
