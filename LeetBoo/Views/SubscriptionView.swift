@@ -85,6 +85,14 @@ struct SubscriptionView: View {
                         }
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundColor(.leetCodeTextSecondary)
+
+                        HStack(spacing: 16) {
+                            Link("Privacy Policy", destination: URL(string: "https://github.com/evangelosmeklis/LeetBoo/blob/main/PRIVACY_POLICY.md")!)
+
+                            Link("Terms of Use (EULA)", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                        }
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.leetCodeTextSecondary)
                     }
 
                     Spacer()
